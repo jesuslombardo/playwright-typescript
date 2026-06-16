@@ -1,0 +1,29 @@
+{
+  "name": "playwright-typescript",
+  "version": "1.0.0",
+  "description": "A foundational project to incrementally build a modern, maintainable, and scalable test automation framework, following real-world quality engineering practices.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:cross-browser": "CROSS_BROWSER=true playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:chromium": "playwright test --project=chromium",
+    "report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jesuslombardo/playwright-typescript.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jesuslombardo/playwright-typescript/issues"
+  },
+  "homepage": "https://github.com/jesuslombardo/playwright-typescript#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "@types/node": "^25.9.3",
+    "typescript": "^6.0.3"
+  }
+}

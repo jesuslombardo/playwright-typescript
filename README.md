@@ -74,10 +74,20 @@ This project is considered successful when the repository enables:
 - quickly understanding architecture and design decisions,
 - extending the solution without friction.
 
+## Documentation
+
+- [Build Log](docs/BUILD_LOG.md) — step-by-step journal of every setup decision, command, and learning along the way.
+
 ## Current Status
 
-`Project kickoff`
+**Phase 1 — Bootstrap** (in progress)
+
+- [x] Git repository
+- [x] Node.js project (`package.json`)
+- [x] TypeScript + `tsconfig.json`
+- [x] Playwright setup
+- [x] First E2E test (example)
 
 ---
 
-The next step is to build the technical foundation (tooling + initial structure) and move forward in small cycles with a focus on quality.
+See the [Build Log](docs/BUILD_LOG.md) for details on each step.
