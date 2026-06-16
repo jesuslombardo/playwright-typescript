@@ -194,7 +194,10 @@ npm install -D typescript @types/node
 ✅ First E2E test (example)
 ✅ .gitignore (Playwright artifacts + .DS_Store)
 ✅ ESLint + Prettier
-⬜ Phase 2 — folder structure
+✅ Editor workspace settings
+✅ Phase 2 — folder structure + ARCHITECTURE.md + ADRs
+⬜ First Page Object (Sauce Demo)
+⬜ First real E2E test
 ```
 
 ---
@@ -454,7 +457,84 @@ To ignore `.DS_Store` in ALL your repos, create `~/.gitignore_global` with `.DS_
 
 **Next**
 
-- Phase 2: folder structure (pages, fixtures, utils, config).
+- First Page Object against Sauce Demo (Step 2.2).
+
+---
+
+## Step 9 — Phase 2.1: Folder structure and architecture docs
+
+**Status:** Done
+
+**What**
+
+- Created layered folder structure: `pages/`, `components/`, `fixtures/`, `utils/`, `config/`.
+- Added `docs/ARCHITECTURE.md` — current design snapshot for devs and tooling.
+- Added `docs/adr/` with three Architecture Decision Records.
+- Updated `README.md` documentation links and Phase 2 status.
+
+**Why**
+
+- Separation of concerns scales better than flat tests.
+- `ARCHITECTURE.md` answers "how is this project organized?"
+- ADRs answer "why did we choose this?" without cluttering the architecture doc.
+- `.gitkeep` files allow Git to track empty folders until code is added.
+
+**Folders created**
+| Folder | Responsibility |
+|--------|----------------|
+| `pages/` | Page Objects — one class per screen |
+| `components/` | Shared UI (header, modals) |
+| `fixtures/` | Playwright custom fixtures |
+| `utils/` | Non-UI helpers |
+| `config/` | Environment URLs and test data |
+
+**Documentation created**
+| File | Purpose |
+|------|---------|
+| `docs/ARCHITECTURE.md` | Living design doc — current state |
+| `docs/adr/001-...` | POM and folder structure rationale |
+| `docs/adr/002-...` | Browser execution strategy rationale |
+| `docs/adr/003-...` | ESLint/Prettier code style rationale |
+| `docs/adr/README.md` | ADR index and template |
+
+**Learnings**
+
+- `ARCHITECTURE.md` and ADRs complement each other — not redundant.
+- ARCHITECTURE = what/how (updated when design changes).
+- ADR = why (immutable history; supersede, don't delete).
+- BUILD_LOG = when (chronological journal).
+
+**Next**
+
+- Step 2.2: First Page Object (`LoginPage`) for Sauce Demo.
+
+---
+
+## Step 10 — ADR-004: Components vs Fixtures
+
+**Status:** Done
+
+**What**
+
+- Added `docs/adr/004-components-vs-fixtures.md` with decision guide, anti-patterns, and Sauce Demo examples.
+- Cross-referenced ADR-004 from ADR-001 and ARCHITECTURE.md.
+- Added "Where does this code go?" quick reference and flow diagram to ARCHITECTURE.md.
+
+**Why**
+
+- Components and fixtures are the most confused layers in test frameworks.
+- ADR-001 defines folders; ADR-004 defines **criteria for placing code** — complementary, not redundant.
+- Future self (and other devs) can answer "where does this go?" in 30 seconds.
+
+**Learnings**
+
+- One ADR per confused concept > one mega-ADR for everything.
+- ARCHITECTURE.md = quick lookup; ADR-004 = deep rationale.
+- Anti-patterns table prevents common mistakes early.
+
+**Next**
+
+- Step 2.2: First Page Object (`LoginPage`) for Sauce Demo.
 
 ---
 

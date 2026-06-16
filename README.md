@@ -76,11 +76,21 @@ This project is considered successful when the repository enables:
 
 ## Documentation
 
-- [Build Log](docs/BUILD_LOG.md) — step-by-step journal of every setup decision, command, and learning along the way.
+- [Architecture](docs/ARCHITECTURE.md) — current framework design, patterns, and conventions
+- [Build Log](docs/BUILD_LOG.md) — step-by-step journal of every setup decision, command, and learning along the way
+- [Architecture Decision Records](docs/adr/) — rationale behind major technical choices
 
 ## Current Status
 
-**Phase 1 — Bootstrap** (complete)
+**Phase 2 — Automation Foundation** (in progress)
+
+- [x] Folder structure (`pages/`, `components/`, `fixtures/`, `utils/`, `config/`)
+- [x] Architecture documentation (`ARCHITECTURE.md` + ADRs)
+- [ ] First Page Object (Sauce Demo)
+- [ ] First real E2E test
+- [ ] Environment configuration
+
+### Phase 1 — Bootstrap (complete)
 
 - [x] Git repository
 - [x] Node.js project (`package.json`)
@@ -91,4 +101,4 @@ This project is considered successful when the repository enables:
 
 ---
 
-See the [Build Log](docs/BUILD_LOG.md) for details on each step.
+See [Architecture](docs/ARCHITECTURE.md) and the [Build Log](docs/BUILD_LOG.md) for details.
