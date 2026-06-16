@@ -11,4 +11,8 @@ export class HeaderComponent {
     await this.openMenu()
     await this.page.getByRole('link', { name: 'Logout' }).click()
   }
+
+  async openCart() {
+    await this.page.getByTestId('shopping-cart-link').click()
+  }
 }

@@ -202,7 +202,11 @@ npm install -D typescript @types/node
 ✅ InventoryPage + inventory test
 ✅ Auth fixture (`loggedInPage`)
 ✅ HeaderComponent + logout test
-✅ Removed Playwright example spec
+✅ CartPage + CheckoutPage + cart/checkout tests
+✅ Utils (data-generator) + testProducts config
+✅ Fixture typing + POM selector cleanup
+✅ Phase 2 complete
+⬜ Phase 3 — Quality and Reporting
 ```
 
 ---
@@ -645,6 +649,37 @@ npm test -- tests/auth/login.spec.ts tests/inventory/inventory.spec.ts
 **Next**
 
 - Commit Phase 2 feature set.
+
+---
+
+## Step 14 — Phase 2 completion: cart, checkout, utils
+
+**Status:** Done
+
+**What**
+
+- Added `CartPage`, `CheckoutPage`, and `HeaderComponent.openCart()`.
+- Added `tests/cart/cart.spec.ts` and `tests/checkout/checkout.spec.ts`.
+- Added `utils/data-generator.ts` (`generateCheckoutCustomer`).
+- Added `testProducts` to config; refactored inventory test to use it.
+- Typed `loggedInPage` fixture; moved stray selectors from tests to pages.
+- Added "Test writing rules" to ARCHITECTURE.md; marked Phase 2 complete in README.
+
+**Why**
+
+- Cart and checkout complete a representative Sauce Demo purchase flow.
+- Utils folder demonstrates non-UI helpers separate from config/fixtures.
+- Phase 2 exit criteria: layered structure + real E2E flows + documented conventions.
+
+**Verification**
+
+```
+6 passed — login x2, inventory, logout, cart, checkout
+```
+
+**Next**
+
+- Phase 3: reporting, anti-flaky strategy, pre-commit hooks.
 
 ---
 

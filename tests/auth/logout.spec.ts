@@ -1,4 +1,5 @@
 import { test, expect } from '../../fixtures/auth.fixture'
+import { LoginPage } from '../../pages/login.page'
 import { InventoryPage } from '../../pages/inventory.page'
 
 test.describe('Logout', () => {
@@ -8,7 +9,8 @@ test.describe('Logout', () => {
     await expect(inventoryPage.title).toBeVisible()
     await inventoryPage.header.logout()
 
+    const loginPage = new LoginPage(loggedInPage)
     await expect(loggedInPage).toHaveURL('/')
-    await expect(loggedInPage.getByTestId('login-button')).toBeVisible()
+    await expect(loginPage.loginButton).toBeVisible()
   })
 })

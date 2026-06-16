@@ -22,7 +22,10 @@ config/       → environment URLs, credentials, test data
 ```
 playwright-typescript/
 ├── tests/                  # Test specs — scenarios only
-│   └── example.spec.ts
+│   ├── auth/
+│   ├── inventory/
+│   ├── cart/
+│   └── checkout/
 ├── pages/                  # Page Objects — one class per screen
 ├── components/             # Component Objects — shared UI across pages
 ├── fixtures/               # Custom Playwright fixtures
@@ -114,9 +117,15 @@ Is it a URL, env var, or credential?   → config/
 
 ### Test organization
 
-- Group specs by feature/domain: `tests/auth/`, `tests/inventory/`.
+- Group specs by feature/domain: `tests/auth/`, `tests/inventory/`, `tests/cart/`.
 - One test file per logical feature area.
-- Assertions stay in tests — not inside page objects (default rule).
+
+### Test writing rules
+
+- **Actions** → page/component methods only (`loginPage.login()`, `header.openCart()`).
+- **Assertions** → in tests with `expect()` — not inside page objects.
+- **Selectors** → defined in pages/components; tests reuse their locators.
+- **URL checks** → allowed directly in tests (`toHaveURL`).
 
 ### Code style
 

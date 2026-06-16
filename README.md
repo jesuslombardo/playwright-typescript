@@ -82,15 +82,18 @@ This project is considered successful when the repository enables:
 
 ## Current Status
 
-**Phase 2 — Automation Foundation** (in progress)
+**Phase 2 — Automation Foundation** (complete)
 
 - [x] Folder structure (`pages/`, `components/`, `fixtures/`, `utils/`, `config/`)
 - [x] Architecture documentation (`ARCHITECTURE.md` + ADRs)
-- [x] Environment configuration
+- [x] Environment configuration + test data
 - [x] LoginPage + login tests (happy + unhappy path)
 - [x] InventoryPage + inventory test
+- [x] CartPage + cart test
+- [x] CheckoutPage + checkout test
 - [x] Auth fixture (`loggedInPage`)
-- [x] HeaderComponent + logout test
+- [x] HeaderComponent (logout + open cart)
+- [x] Utils (`generateCheckoutCustomer`)
 
 ### Phase 1 — Bootstrap (complete)
 

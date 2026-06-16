@@ -1,8 +1,12 @@
-import { test as base } from '@playwright/test'
+import { test as base, Page } from '@playwright/test'
 import { LoginPage } from '../pages/login.page'
 import { testUsers } from '../config/environments'
 
-export const test = base.extend({
+type AuthFixtures = {
+  loggedInPage: Page
+}
+
+export const test = base.extend<AuthFixtures>({
   loggedInPage: async ({ page }, use) => {
     const loginPage = new LoginPage(page)
     await loginPage.goto()

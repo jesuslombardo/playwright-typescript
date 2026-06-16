@@ -14,3 +14,10 @@ export const testUsers = {
     password: 'secret_sauce',
   },
 } as const
+
+export const testProducts = {
+  backpack: {
+    slug: 'sauce-labs-backpack',
+    name: 'Sauce Labs Backpack',
+  },
+} as const
