@@ -1,9 +1,9 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 const chromiumProject = {
   name: 'chromium',
   use: { ...devices['Desktop Chrome'] },
-};
+}
 
 const crossBrowserProjects = [
   chromiumProject,
@@ -15,7 +15,7 @@ const crossBrowserProjects = [
     name: 'webkit',
     use: { ...devices['Desktop Safari'] },
   },
-];
+]
 
 /**
  * Read environment variables from file.
@@ -55,10 +55,7 @@ export default defineConfig({
    * - CI (CI=true): all browsers — cross-browser coverage on pipeline.
    * - Manual: npm run test:cross-browser — all browsers locally before release.
    */
-  projects:
-    process.env.CI || process.env.CROSS_BROWSER
-      ? crossBrowserProjects
-      : [chromiumProject],
+  projects: process.env.CI || process.env.CROSS_BROWSER ? crossBrowserProjects : [chromiumProject],
 
   /* Test against mobile viewports. */
   // {
@@ -86,4 +83,4 @@ export default defineConfig({
   //   url: 'http://localhost:3000',
   //   reuseExistingServer: !process.env.CI,
   // },
-});
+})

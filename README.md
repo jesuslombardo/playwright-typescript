@@ -80,13 +80,14 @@ This project is considered successful when the repository enables:
 
 ## Current Status
 
-**Phase 1 — Bootstrap** (in progress)
+**Phase 1 — Bootstrap** (complete)
 
 - [x] Git repository
 - [x] Node.js project (`package.json`)
 - [x] TypeScript + `tsconfig.json`
 - [x] Playwright setup
 - [x] First E2E test (example)
+- [x] ESLint + Prettier
 
 ---
 

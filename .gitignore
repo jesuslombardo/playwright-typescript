@@ -1,8 +1,13 @@
+# Environment
 .env
-/node_modules
+
+# Dependencies
+node_modules/
+
+# macOS
+.DS_Store
 
 # Playwright
-node_modules/
 /test-results/
 /playwright-report/
 /blob-report/
