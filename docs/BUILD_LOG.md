@@ -196,8 +196,13 @@ npm install -D typescript @types/node
 ✅ ESLint + Prettier
 ✅ Editor workspace settings
 ✅ Phase 2 — folder structure + ARCHITECTURE.md + ADRs
-⬜ First Page Object (Sauce Demo)
-⬜ First real E2E test
+✅ Environment config (Sauce Demo)
+✅ LoginPage + login test
+✅ Negative login test (locked out user)
+✅ InventoryPage + inventory test
+✅ Auth fixture (`loggedInPage`)
+✅ HeaderComponent + logout test
+✅ Removed Playwright example spec
 ```
 
 ---
@@ -534,7 +539,112 @@ To ignore `.DS_Store` in ALL your repos, create `~/.gitignore_global` with `.DS_
 
 **Next**
 
-- Step 2.2: First Page Object (`LoginPage`) for Sauce Demo.
+- InventoryPage, auth fixture, or locked-out user test.
+
+---
+
+## Step 11 — LoginPage and first Sauce Demo test
+
+**Status:** Done
+
+**What**
+
+- Created `config/environments.ts` with base URL and test users.
+- Wired `baseURL` and `testIdAttribute: 'data-test'` in `playwright.config.ts`.
+- Created `pages/login.page.ts` — first Page Object.
+- Created `tests/auth/login.spec.ts` — first real E2E test.
+
+**Why**
+
+- Config centralizes URLs and credentials before they spread across tests.
+- LoginPage encapsulates Sauce Demo login selectors and actions.
+- Test reads as a user scenario; assertions stay in the spec.
+
+**Commands**
+
+```bash
+npm test -- tests/auth/login.spec.ts
+```
+
+**Verification**
+
+```
+1 passed (2.6s) — user can login with valid credentials
+```
+
+**Learnings**
+
+- `baseURL` in config allows `page.goto('/')` instead of full URLs.
+- `testIdAttribute: 'data-test'` maps `getByTestId()` to Sauce Demo's attribute.
+- Page Object = locators + actions; test = scenario + assertions.
+
+**Next**
+
+- Header component or commit Phase 2 progress.
+
+---
+
+## Step 12 — Negative login test, InventoryPage, auth fixture
+
+**Status:** Done
+
+**What**
+
+- Added locked-out user test using `errorMessage` locator from LoginPage.
+- Created `pages/inventory.page.ts` and `tests/inventory/inventory.spec.ts`.
+- Created `fixtures/auth.fixture.ts` with `loggedInPage` fixture.
+- Refactored inventory test to use fixture instead of duplicated login.
+
+**Why**
+
+- Negative tests validate error handling, not just happy paths.
+- InventoryPage demonstrates a second Page Object for a new screen.
+- Auth fixture removes repeated login setup — demonstrates ADR-004 in practice.
+
+**Commands**
+
+```bash
+npm test -- tests/auth/login.spec.ts tests/inventory/inventory.spec.ts
+```
+
+**Verification**
+
+```
+3 passed — login happy path, login locked out, add to cart
+```
+
+**Next**
+
+- Commit Phase 2 progress.
+
+---
+
+## Step 13 — HeaderComponent (shared UI)
+
+**Status:** Done
+
+**What**
+
+- Created `components/header.component.ts` with `openMenu()` and `logout()`.
+- Composed `HeaderComponent` inside `InventoryPage` (`inventoryPage.header`).
+- Added `tests/auth/logout.spec.ts` using auth fixture + header component.
+- Removed `tests/example.spec.ts` (Playwright demo — replaced by Sauce Demo tests).
+
+**Why**
+
+- Header appears on every post-login screen — classic component object candidate (ADR-004).
+- InventoryPage delegates menu/logout to HeaderComponent instead of duplicating selectors.
+- Demonstrates composition: page **has-a** component, test uses `inventoryPage.header.logout()`.
+
+**Verification**
+
+```
+4 passed — login x2, inventory, logout
+```
+
+**Next**
+
+- Commit Phase 2 feature set.
 
 ---
 

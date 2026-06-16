@@ -86,9 +86,11 @@ This project is considered successful when the repository enables:
 
 - [x] Folder structure (`pages/`, `components/`, `fixtures/`, `utils/`, `config/`)
 - [x] Architecture documentation (`ARCHITECTURE.md` + ADRs)
-- [ ] First Page Object (Sauce Demo)
-- [ ] First real E2E test
-- [ ] Environment configuration
+- [x] Environment configuration
+- [x] LoginPage + login tests (happy + unhappy path)
+- [x] InventoryPage + inventory test
+- [x] Auth fixture (`loggedInPage`)
+- [x] HeaderComponent + logout test
 
 ### Phase 1 — Bootstrap (complete)
 
