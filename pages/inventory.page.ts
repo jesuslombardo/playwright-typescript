@@ -1,15 +1,12 @@
 import { Locator, Page } from '@playwright/test'
-import { HeaderComponent } from '../components/header.component'
+import { AuthenticatedPage } from './authenticated.page'
 
-export class InventoryPage {
-  readonly page: Page
-  readonly header: HeaderComponent
+export class InventoryPage extends AuthenticatedPage {
   readonly title: Locator
   readonly cartBadge: Locator
 
   constructor(page: Page) {
-    this.page = page
-    this.header = new HeaderComponent(page)
+    super(page)
     this.title = page.getByText('Products')
     this.cartBadge = page.locator('.shopping_cart_badge')
   }

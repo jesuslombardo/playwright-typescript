@@ -27,6 +27,11 @@ playwright-typescript/
 │   ├── cart/
 │   └── checkout/
 ├── pages/                  # Page Objects — one class per screen
+│   ├── authenticated.page.ts  # Base page with shared header (post-login)
+│   ├── login.page.ts
+│   ├── inventory.page.ts
+│   ├── cart.page.ts
+│   └── checkout.page.ts
 ├── components/             # Component Objects — shared UI across pages
 ├── fixtures/               # Custom Playwright fixtures
 ├── utils/                  # Generic helpers (no DOM)
@@ -64,7 +69,8 @@ playwright-typescript/
 
 - UI shared across pages (navbar, modals) lives in `components/`.
 - Page objects **compose** components — they do not duplicate selectors.
-- Prefer **has-a** over **is-a** (composition over inheritance).
+- Post-login pages extend `AuthenticatedPage`, which provides `header: HeaderComponent`.
+- Prefer **has-a** over **is-a** for components; use inheritance only for shared page layout (e.g. authenticated shell).
 
 ### Fixtures
 

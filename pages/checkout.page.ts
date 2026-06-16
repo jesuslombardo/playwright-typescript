@@ -1,8 +1,8 @@
 import { Locator, Page } from '@playwright/test'
 import { CheckoutCustomer } from '../utils/data-generator'
+import { AuthenticatedPage } from './authenticated.page'
 
-export class CheckoutPage {
-  readonly page: Page
+export class CheckoutPage extends AuthenticatedPage {
   readonly firstNameInput: Locator
   readonly lastNameInput: Locator
   readonly postalCodeInput: Locator
@@ -11,7 +11,7 @@ export class CheckoutPage {
   readonly completeHeader: Locator
 
   constructor(page: Page) {
-    this.page = page
+    super(page)
     this.firstNameInput = page.getByTestId('firstName')
     this.lastNameInput = page.getByTestId('lastName')
     this.postalCodeInput = page.getByTestId('postalCode')

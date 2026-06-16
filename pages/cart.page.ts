@@ -1,12 +1,12 @@
 import { Locator, Page } from '@playwright/test'
+import { AuthenticatedPage } from './authenticated.page'
 
-export class CartPage {
-  readonly page: Page
+export class CartPage extends AuthenticatedPage {
   readonly title: Locator
   readonly checkoutButton: Locator
 
   constructor(page: Page) {
-    this.page = page
+    super(page)
     this.title = page.getByTestId('title')
     this.checkoutButton = page.getByTestId('checkout')
   }
