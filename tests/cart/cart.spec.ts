@@ -11,7 +11,7 @@ test.describe('Cart', () => {
     await inventoryPage.header.openCart()
 
     const cartPage = new CartPage(loggedInPage)
-    await expect(cartPage.title).toHaveText('Your Cardt')
+    await expect(cartPage.title).toHaveText('Your Cart')
     await expect(cartPage.itemByName(testProducts.backpack.name)).toBeVisible()
   })
 })
