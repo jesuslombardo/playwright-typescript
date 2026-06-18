@@ -33,18 +33,6 @@ jobs:
       - name: Check Prettier formatting
         run: npm run format:check
 
-      # TEMP: prove the secret reaches the runner (remove after demo)
-      - name: (temp) Verify secret wiring
-        env:
-          SAUCE_STANDARD_PASSWORD: ${{ secrets.SAUCE_STANDARD_PASSWORD }}
-        run: |
-          if [ -n "$SAUCE_STANDARD_PASSWORD" ]; then
-            echo "Secret IS set. Length: ${#SAUCE_STANDARD_PASSWORD} chars"
-            echo "Trying to print the value: $SAUCE_STANDARD_PASSWORD"
-          else
-            echo "Secret NOT set -> code would fall back to the default"
-          fi
-
   test:
     name: Playwright
     needs: quality
