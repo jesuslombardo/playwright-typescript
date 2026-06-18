@@ -37,7 +37,10 @@ jobs:
     name: Playwright
     needs: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Temporary: raised from 15 -> 30 because the plain `--with-deps` install
+    # sometimes exceeds 15 min on slow apt mirrors. Revert to 15 once the
+    # Playwright Docker image (Phase 5) removes the install bottleneck.
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
