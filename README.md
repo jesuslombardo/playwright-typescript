@@ -104,7 +104,7 @@ This project is considered successful when the repository enables:
 - [x] Secrets pattern for credentials (`SAUCE_*` env vars)
 - [x] CD MVP: Playwright report published to GitHub Pages on `main`
 - [x] BUILD_LOG Step 15 — CI/CD documented
-- [x] BUILD_LOG Step 16 — browser cache + measured CI run time (real fix = Docker image, see Phase 5)
+- [x] BUILD_LOG Step 16 — measured CI run time; browser cache tried + reverted (real fix = Docker image, see Phase 5)
 - [x] BUILD_LOG Step 17 — local secrets via `.env` + `.env.example` (dotenv)
 
 **Phase 2 — Automation Foundation** (complete)

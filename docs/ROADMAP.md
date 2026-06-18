@@ -140,9 +140,9 @@ Introduce when static config in `config/` is not enough.
 
 A green run was ~7 min while tests only ran ~24s. The cost is the install step.
 
-- We tried caching `~/.cache/ms-playwright`. The cache works but saved only ~42s: measured cache hit was still ~6m44s.
-- **Root cause:** `--with-deps` / `install-deps` runs `apt-get` for browser OS libraries (~6.5 min). That is NOT cacheable with `actions/cache` (system packages, not files in a folder).
-- **Real fix (do here):** run the job in Playwright's official container so browsers AND OS deps are preinstalled — the install step nearly disappears.
+- We tried caching `~/.cache/ms-playwright`, measured only ~42s saved, and it introduced a cache-miss→timeout failure mode — so we **reverted it** (see BUILD_LOG Step 16). `ci.yml` is back to a single plain install step.
+- **Root cause:** `--with-deps` runs `apt-get` for browser OS libraries (~6.5 min). That is NOT cacheable with `actions/cache` (system packages, not files in a folder).
+- **Real fix (do here):** run the job in Playwright's official container so browsers AND OS deps are preinstalled — the install step nearly disappears. Revisit caching here too, together with Docker.
 
 ```yaml
 test:
@@ -176,16 +176,16 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 
 ## Map: where to find each concept in the repo
 
-| Concept                        | Where                                           |
-| ------------------------------ | ----------------------------------------------- |
-| Page Object Model              | `pages/`, ADR-001                               |
-| Components vs fixtures         | `components/`, `fixtures/`, ADR-004             |
-| Browser strategy (local vs CI) | `playwright.config.ts`, ADR-002                 |
-| Code style                     | ESLint/Prettier, ADR-003                        |
-| CI pipeline                    | `.github/workflows/ci.yml`                      |
-| CD (GitHub Pages)              | job `deploy-report` in `ci.yml`                 |
-| Secrets pattern                | `config/environments.ts`, workflow `env:`       |
-| Local secrets (`.env`)         | `.env.example`, `playwright.config.ts` (dotenv) |
-| CI run time (cache / Docker)   | `ci.yml` cache step, BUILD_LOG Step 16, Phase 5 |
-| Build history                  | `docs/BUILD_LOG.md` Steps 1–17                  |
-| This plan                      | `docs/ROADMAP.md`                               |
+| Concept                        | Where                                             |
+| ------------------------------ | ------------------------------------------------- |
+| Page Object Model              | `pages/`, ADR-001                                 |
+| Components vs fixtures         | `components/`, `fixtures/`, ADR-004               |
+| Browser strategy (local vs CI) | `playwright.config.ts`, ADR-002                   |
+| Code style                     | ESLint/Prettier, ADR-003                          |
+| CI pipeline                    | `.github/workflows/ci.yml`                        |
+| CD (GitHub Pages)              | job `deploy-report` in `ci.yml`                   |
+| Secrets pattern                | `config/environments.ts`, workflow `env:`         |
+| Local secrets (`.env`)         | `.env.example`, `playwright.config.ts` (dotenv)   |
+| CI run time (Docker fix)       | BUILD_LOG Step 16, Phase 5 (cache tried+reverted) |
+| Build history                  | `docs/BUILD_LOG.md` Steps 1–17                    |
+| This plan                      | `docs/ROADMAP.md`                                 |

@@ -822,16 +822,14 @@ CI=true npm test
 
 ---
 
-## Step 16 — CI optimization: cache Playwright browsers
+## Step 16 — CI optimization attempt: cache Playwright browsers (tried, then reverted)
 
-**Status:** Done
+**Status:** Reverted — kept the learning, removed the complexity. Real fix deferred to Phase 5 (Docker).
 
 **What**
 
-- Added an `actions/cache@v4` step that caches `~/.cache/ms-playwright` between runs.
-- Split the install into two conditional steps:
-  - **Cache miss:** `npx playwright install --with-deps` (browsers + OS libs).
-  - **Cache hit:** `npx playwright install-deps` (OS libs only — browsers come from cache).
+- Tried an `actions/cache@v4` step caching `~/.cache/ms-playwright`, with a split install (cache miss = `install --with-deps`, cache hit = `install-deps`).
+- **Reverted** to the simple single step `npx playwright install --with-deps`, because the cache saved almost nothing and added real downsides (see below).
 
 **Why (and the surprise)**
 
@@ -852,20 +850,28 @@ Assumed:  [download browsers 7min]            <- cached this
 Reality:  [download browsers ~40s] + [apt-get OS libs ~6.5min]  <- NOT cacheable
 ```
 
-**The real fix (deferred to Phase 5)**
+**The downside that sealed the revert**
 
-- Use Playwright's official Docker image (`mcr.microsoft.com/playwright:vX-jammy`) via `container:` — browsers AND OS libs are preinstalled, so the install step nearly disappears. Bigger change (containers in CI) → Phase 5. See [ROADMAP.md](ROADMAP.md).
-- The cache step we added is harmless and saves a little; kept as a stepping stone.
+- Adding `dotenv` (Step 17) changed `package-lock.json` → changed the cache key → **cache MISS** → full `--with-deps` again.
+- On one unlucky run, `--with-deps` (the apt OS-deps download) was so slow it exceeded `timeout-minutes: 15` **before the tests even ran** → the job was cancelled by the timeout fuse.
+- Because cancelled jobs skip the "Post Cache" save step, the cache was never seeded → every retry was another MISS → a vicious cycle.
+- Net: ~42s of best-case savings vs. extra YAML + a confusing failure mode. Not worth it now.
+
+**Decision: revert + defer the real fix to Phase 5**
+
+- Reverted to the plain `npx playwright install --with-deps` to keep `ci.yml` simple.
+- The real fix is Playwright's official Docker image (`mcr.microsoft.com/playwright:vX-jammy`) via `container:` — browsers AND OS libs preinstalled, so the install step nearly disappears. We'll do caching + Docker together in Phase 5. See [ROADMAP.md](ROADMAP.md).
 
 **Files**
 
-- `.github/workflows/ci.yml` (cache step + conditional install steps)
+- `.github/workflows/ci.yml` (reverted to a single install step)
 
 **Learnings**
 
 - **Measure, don't assume.** Check per-step timing _inside_ a slow step before optimizing — we cached the wrong (small) part because we didn't measure first.
 - In CI, the bottleneck is often **environment setup**, but be specific: here it was **apt OS deps**, not the browser download. The distinction changes the fix.
 - `actions/cache` only helps for things that live as **files** in a path. System packages (apt) need a different solution (prebuilt container image).
+- A half-measure can be **worse than nothing**: the cache added a flaky cache-miss→timeout failure mode for ~42s of savings. Prefer the real fix (Docker) over a partial one.
 - `timeout-minutes` is a safety **fuse**, not a time budget; the real run-duration levers are the **container image** and (later) **sharding**.
 
 ---
