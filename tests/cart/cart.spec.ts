@@ -3,6 +3,7 @@ import { InventoryPage } from '../../pages/inventory.page'
 import { CartPage } from '../../pages/cart.page'
 import { testProducts } from '../../config/environments'
 
+// Cart tests
 test.describe('Cart', () => {
   test('user can view added product in the cart', async ({ loggedInPage }) => {
     const inventoryPage = new InventoryPage(loggedInPage)
