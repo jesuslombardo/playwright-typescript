@@ -27,7 +27,7 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 1   Bootstrap
 ✅ Phase 2   Automation (6 E2E, POM, fixtures, 4 ADRs)
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
-🟡 Phase 3   Hooks ✅ (Husky) + reporting/anti-flaky ⬜
+🟡 Phase 3   Hooks ✅ (Husky) + anti-flaky ✅ (ADR-005) · reporting 💤 NTH
 ⬜ data/     Structured test data layer
 ⬜ Phase 5   Tags, sharding, hardening
 ```
@@ -98,12 +98,12 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Next **large** phase.
 
-| Item                    | Purpose                                            | Status             |
-| ----------------------- | -------------------------------------------------- | ------------------ |
-| **Husky + lint-staged** | Lint/format automatically before each commit       | ✅                 |
-| **Anti-flaky strategy** | Document waits, retries, `test.describe.configure` | 🔜 next (critical) |
-| **Allure / Monocart**   | Richer reports (Monocart = JS-native, no Java)     | 💤 NTH (later)     |
-| **Dual reporter**       | HTML locally + something clearer in CI logs        | 💤 NTH (later)     |
+| Item                    | Purpose                                        | Status         |
+| ----------------------- | ---------------------------------------------- | -------------- |
+| **Husky + lint-staged** | Lint/format automatically before each commit   | ✅             |
+| **Anti-flaky strategy** | Web-first assertions, no hard waits, ADR-005   | ✅             |
+| **Allure / Monocart**   | Richer reports (Monocart = JS-native, no Java) | 💤 NTH (later) |
+| **Dual reporter**       | HTML locally + something clearer in CI logs    | 💤 NTH (later) |
 
 **Already in place (formalize + document):**
 
@@ -189,5 +189,6 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 | CI run time (Docker fix)       | BUILD_LOG Step 16, Phase 5 (cache tried+reverted) |
 | Pre-commit hook (Husky)        | `.husky/pre-commit`, `package.json` lint-staged   |
 | Node version pinning           | `.nvmrc`, `package.json` engines                  |
-| Build history                  | `docs/BUILD_LOG.md` Steps 1–18                    |
+| Anti-flaky strategy            | ADR-005, `playwright.config.ts` (retries/traces)  |
+| Build history                  | `docs/BUILD_LOG.md` Steps 1–19                    |
 | This plan                      | `docs/ROADMAP.md`                                 |

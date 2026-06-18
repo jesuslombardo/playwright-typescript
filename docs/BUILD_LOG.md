@@ -956,6 +956,39 @@ Reality:  [download browsers ~40s] + [apt-get OS libs ~6.5min]  <- NOT cacheable
 
 ---
 
+## Step 19 — Phase 3: Anti-flaky strategy (audit + ADR-005)
+
+**Status:** Done
+
+**What**
+
+- Audited the suite (grep) for flakiness smells: `waitForTimeout`, `setTimeout`, `waitForSelector`, `networkidle`, `.isVisible()`/`.isHidden()` as waits, non-web-first assertions. **Result: zero occurrences** — the suite was already clean.
+- Documented the strategy in [ADR-005](adr/005-anti-flaky-test-strategy.md) and registered it in the ADR index.
+
+**Why**
+
+- A flaky test (passes/fails without code changes) is the **#1 enemy** of a suite: it erodes trust until real red results get ignored. A small reliable suite > a large flaky one.
+- Writing down the strategy makes the "why" explicit (for future me and for the planned course based on this repo).
+
+**Strategy (see ADR-005 for detail)**
+
+- Web-first assertions (auto-waiting) instead of manual timing.
+- **Ban** hard waits (`waitForTimeout`); **avoid** `networkidle` (indirect signal, Playwright-discouraged).
+- Resilient locators (`getByRole`/`getByTestId`); fresh context per test (isolation).
+- `retries: 2` on CI = safety net, **not** a cure (Playwright flags retry-passes as "flaky").
+
+**Files**
+
+- `docs/adr/005-anti-flaky-test-strategy.md`, `docs/adr/README.md`
+
+**Learnings**
+
+- "It works" ≠ "it's a good idea": `networkidle` works but is less reliable than asserting the real result. Choose the **predictable** option.
+- Discouraged ≠ deprecated ≠ removed — `networkidle` is only _discouraged_ (still works, no warning), softer than the Node 20 _deprecation_ warnings seen in CI.
+- The best anti-flaky outcome is a **clean audit**: the framework's design (POM + web-first assertions + isolation) prevents flakiness up front.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

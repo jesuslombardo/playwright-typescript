@@ -10,6 +10,7 @@ An [Architecture Decision Record](https://adr.github.io/) captures an important 
 | [002](002-browser-execution-strategy.md)             | Browser execution strategy             | Accepted |
 | [003](003-code-style-eslint-prettier.md)             | Code style with ESLint and Prettier    | Accepted |
 | [004](004-components-vs-fixtures.md)                 | Component Objects vs custom Fixtures   | Accepted |
+| [005](005-anti-flaky-test-strategy.md)               | Anti-flaky test strategy               | Accepted |
 
 ## When to add a new ADR
 
