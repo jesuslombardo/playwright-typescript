@@ -870,6 +870,46 @@ Reality:  [download browsers ~40s] + [apt-get OS libs ~6.5min]  <- NOT cacheable
 
 ---
 
+## Step 17 — Local secrets: `.env` + `.env.example` (dotenv)
+
+**Status:** Done
+
+**What**
+
+- Installed `dotenv` (devDependency).
+- Activated env loading in `playwright.config.ts` as the **first import**: `import 'dotenv/config'`.
+- Added `.env.example` (committed) — documents which variables the framework reads.
+- Local `.env` holds real values and is **gitignored** (already in `.gitignore`).
+
+**Why**
+
+- `.env` is the **local twin of GitHub Secrets**: a place outside the code AND outside git for credentials. Same `process.env.X || default` code reads from `.env` locally and from GitHub Secrets in CI.
+- Hardcoding in code is bad because it lands in git history (public). Values in `.env` are fine because git ignores the file — never exposed.
+- `.env.example` doubles as **documentation**: it lists the variable names (no real values) so anyone cloning knows what to set. Safe to commit.
+
+**Key detail: load order (a classic dotenv bug)**
+
+- `config/environments.ts` reads `process.env.SAUCE_*` at **import time**.
+- If dotenv loads _after_ that import, the values arrive too late and the defaults win.
+- Fix: `import 'dotenv/config'` must be the **first import**, before anything that reads `process.env`.
+
+**Verified**
+
+- Put a wrong password in `.env` (no CLI override) → `login` test failed → proves Playwright loads `.env` end-to-end.
+- Restored the correct value → `2 passed`.
+
+**Files**
+
+- `.env.example` (committed), `.env` (gitignored), `playwright.config.ts`, `package.json`
+
+**Learnings**
+
+- The thing that makes `.env` safe is the **`.gitignore` entry**, not the file itself.
+- Commit `.env.example` (template), never `.env` (real values).
+- Test the override **locally** first (`SAUCE_X=... npm test` or a `.env`) — instant vs ~7 min in CI. Only push to test the GitHub Secret itself, which doesn't exist locally.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
