@@ -27,7 +27,7 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 1   Bootstrap
 ✅ Phase 2   Automation (6 E2E, POM, fixtures, 4 ADRs)
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
-⬜ Phase 3   Hooks + reporting + anti-flaky
+🟡 Phase 3   Hooks ✅ (Husky) + reporting/anti-flaky ⬜
 ⬜ data/     Structured test data layer
 ⬜ Phase 5   Tags, sharding, hardening
 ```
@@ -98,12 +98,12 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Next **large** phase.
 
-| Item                    | Purpose                                            |
-| ----------------------- | -------------------------------------------------- |
-| **Husky + lint-staged** | Lint/format automatically before each commit       |
-| **Allure** _(optional)_ | Richer reports for portfolio / enterprise demos    |
-| **Anti-flaky strategy** | Document waits, retries, `test.describe.configure` |
-| **Dual reporter**       | HTML locally + something clearer in CI logs        |
+| Item                    | Purpose                                            | Status |
+| ----------------------- | -------------------------------------------------- | ------ |
+| **Husky + lint-staged** | Lint/format automatically before each commit       | ✅     |
+| **Allure** _(optional)_ | Richer reports for portfolio / enterprise demos    | ⬜     |
+| **Anti-flaky strategy** | Document waits, retries, `test.describe.configure` | ⬜     |
+| **Dual reporter**       | HTML locally + something clearer in CI logs        | ⬜     |
 
 **Already in place (formalize + document):**
 
@@ -187,5 +187,7 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 | Secrets pattern                | `config/environments.ts`, workflow `env:`         |
 | Local secrets (`.env`)         | `.env.example`, `playwright.config.ts` (dotenv)   |
 | CI run time (Docker fix)       | BUILD_LOG Step 16, Phase 5 (cache tried+reverted) |
-| Build history                  | `docs/BUILD_LOG.md` Steps 1–17                    |
+| Pre-commit hook (Husky)        | `.husky/pre-commit`, `package.json` lint-staged   |
+| Node version pinning           | `.nvmrc`, `package.json` engines                  |
+| Build history                  | `docs/BUILD_LOG.md` Steps 1–18                    |
 | This plan                      | `docs/ROADMAP.md`                                 |

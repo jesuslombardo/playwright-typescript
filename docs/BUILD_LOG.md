@@ -916,6 +916,46 @@ Reality:  [download browsers ~40s] + [apt-get OS libs ~6.5min]  <- NOT cacheable
 
 ---
 
+## Step 18 — Phase 3: Husky + lint-staged (pre-commit hook)
+
+**Status:** Done
+
+**What**
+
+- Installed `husky` + `lint-staged` (devDeps); ran `npx husky init`.
+- `.husky/pre-commit` runs `npx lint-staged` (replaced the default `npm test`, which would run the whole E2E suite on every commit — too slow).
+- `lint-staged` config in `package.json`: `eslint --fix` + `prettier --write` on staged `*.{ts,js}`, `prettier --write` on staged `*.{json,md,yml,yaml}`.
+- `"prepare": "husky"` script auto-installs hooks on `npm install` (so the team shares them).
+- Required Node bumped to **>=22** (`engines` + `.nvmrc`).
+
+**Why**
+
+- Shift-left: catch lint/format errors **locally before commit**, not 7 min later in CI.
+- `lint-staged` only checks **changed** files → fast; uses `--fix`/`--write` so it auto-corrects instead of just complaining.
+- Husky is the **local twin** of the CI `quality` job. CI is still the real gate (hooks can be skipped with `--no-verify`); Husky is convenience + speed.
+
+**The Node version snag (a real lesson)**
+
+- First commit attempt crashed: `lint-staged@17` requires Node **>=22.22.1**, but local Node was **20.11.1** (CI already uses 22). Classic "works in CI, breaks locally" environment drift.
+- Fix: upgraded local Node to 22 via `nvm install 22 && nvm alias default 22`, and added `.nvmrc` (`22`) + `engines` so the required version is documented and `nvm use` picks it up.
+
+**Verified (both paths)**
+
+- Lint error (unused var) → `eslint --fix` can't fix → lint-staged fails → **commit blocked**.
+- Clean/auto-fixable files → `prettier --write` formats + re-stages → **commit succeeds** (the Husky setup commit itself went through the hook).
+
+**Files**
+
+- `.husky/pre-commit`, `package.json` (lint-staged, engines, prepare), `.nvmrc`
+
+**Learnings**
+
+- Replace Husky's default `npm test` pre-commit — running the full suite per commit is too slow; use `lint-staged` for fast, changed-files-only checks.
+- Keep **local Node = CI Node**; `.nvmrc` + `engines` document and enforce it, preventing version-drift bugs.
+- Husky doesn't replace CI; it's the fast first filter, CI is the authority.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

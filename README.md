@@ -91,7 +91,7 @@ This project is considered successful when the repository enables:
 ✅ Phase 1   Bootstrap
 ✅ Phase 2   Automation (6 E2E, POM, fixtures, 4 ADRs)
 ✅ Phase 4   CI/CD (pipeline + CD via GitHub Pages)
-⬜ Phase 3   Hooks + reporting + anti-flaky
+🟡 Phase 3   Hooks ✅ (Husky + lint-staged) · reporting/anti-flaky ⬜
 ⬜ Phase 5   Tags, sharding, hardening
 ```
 
