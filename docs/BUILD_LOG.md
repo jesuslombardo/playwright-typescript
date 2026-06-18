@@ -833,22 +833,29 @@ CI=true npm test
   - **Cache miss:** `npx playwright install --with-deps` (browsers + OS libs).
   - **Cache hit:** `npx playwright install-deps` (OS libs only — browsers come from cache).
 
-**Why**
+**Why (and the surprise)**
 
-- A green run was taking **~7 min**, but the tests themselves only ran for **~24 seconds**.
-- The slow part was `npx playwright install --with-deps`: it re-downloaded Chromium + Firefox + WebKit (hundreds of MB) on **every** run because nothing was cached. Download speed also varied run to run (4 min vs 7 min), all from network, not from the tests.
-- Caching the browsers means typical runs reuse them instead of re-downloading → expected drop from ~7 min to ~1 min.
+- A green run was taking **~7 min**, but the tests themselves only ran for **~24 seconds**. The `npx playwright install --with-deps` step was the bottleneck.
+- **Hypothesis:** the slow part was re-downloading Chromium + Firefox + WebKit. Cache `~/.cache/ms-playwright` → expected a drop from ~7 min to ~1 min.
+- **What actually happened (measured):**
+  - Cache MISS (`install --with-deps`): **7m 26s**
+  - Cache HIT (`install-deps` only): **6m 44s**
+  - The cache worked correctly but saved **only ~42 seconds**. The hypothesis was wrong.
 
-**Key detail: browsers vs OS deps**
+**Root cause: it's the OS deps, not the browser download**
 
-- Browsers are **files** → cacheable (`~/.cache/ms-playwright`).
-- `--with-deps` installs **system packages via apt** → NOT cacheable. So even on a cache hit we still run `install-deps` for the OS libs (fast); only the big browser download is skipped.
-- Cache key uses `hashFiles('package-lock.json')`: when dependencies change, the key changes and the cache rebuilds. Otherwise it's reused.
+- The real bottleneck is `--with-deps` / `install-deps` running **`apt-get`** to install browser system libraries (~6.5 min, WebKit needs many). That is **NOT cacheable** with `actions/cache` because apt installs into system dirs, not a single folder.
+- Browser binaries (`~/.cache/ms-playwright`) ARE cacheable, but the download is only ~40s — the small part.
 
-**Where it fits**
+```
+Assumed:  [download browsers 7min]            <- cached this
+Reality:  [download browsers ~40s] + [apt-get OS libs ~6.5min]  <- NOT cacheable
+```
 
-- This is pipeline optimization — part of Phase 5 (hardening), brought forward because the slowness was noticeable while learning.
-- Related future optimization: **sharding** (split tests across parallel machines) for when the suite grows. See [ROADMAP.md](ROADMAP.md) Phase 5.
+**The real fix (deferred to Phase 5)**
+
+- Use Playwright's official Docker image (`mcr.microsoft.com/playwright:vX-jammy`) via `container:` — browsers AND OS libs are preinstalled, so the install step nearly disappears. Bigger change (containers in CI) → Phase 5. See [ROADMAP.md](ROADMAP.md).
+- The cache step we added is harmless and saves a little; kept as a stepping stone.
 
 **Files**
 
@@ -856,9 +863,10 @@ CI=true npm test
 
 **Learnings**
 
-- In CI, the bottleneck is often **environment setup (downloads), not the tests**. Always check the per-step timing before optimizing.
-- `timeout-minutes` is a safety **fuse**, not a time budget; **caching/sharding** is what actually controls run duration.
-- `actions/cache` + a good `key` is the standard way to skip repeated downloads (same idea as `cache: npm` in `setup-node`).
+- **Measure, don't assume.** Check per-step timing _inside_ a slow step before optimizing — we cached the wrong (small) part because we didn't measure first.
+- In CI, the bottleneck is often **environment setup**, but be specific: here it was **apt OS deps**, not the browser download. The distinction changes the fix.
+- `actions/cache` only helps for things that live as **files** in a path. System packages (apt) need a different solution (prebuilt container image).
+- `timeout-minutes` is a safety **fuse**, not a time budget; the real run-duration levers are the **container image** and (later) **sharding**.
 
 ---
 
