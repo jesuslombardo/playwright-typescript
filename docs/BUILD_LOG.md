@@ -822,6 +822,46 @@ CI=true npm test
 
 ---
 
+## Step 16 — CI optimization: cache Playwright browsers
+
+**Status:** Done
+
+**What**
+
+- Added an `actions/cache@v4` step that caches `~/.cache/ms-playwright` between runs.
+- Split the install into two conditional steps:
+  - **Cache miss:** `npx playwright install --with-deps` (browsers + OS libs).
+  - **Cache hit:** `npx playwright install-deps` (OS libs only — browsers come from cache).
+
+**Why**
+
+- A green run was taking **~7 min**, but the tests themselves only ran for **~24 seconds**.
+- The slow part was `npx playwright install --with-deps`: it re-downloaded Chromium + Firefox + WebKit (hundreds of MB) on **every** run because nothing was cached. Download speed also varied run to run (4 min vs 7 min), all from network, not from the tests.
+- Caching the browsers means typical runs reuse them instead of re-downloading → expected drop from ~7 min to ~1 min.
+
+**Key detail: browsers vs OS deps**
+
+- Browsers are **files** → cacheable (`~/.cache/ms-playwright`).
+- `--with-deps` installs **system packages via apt** → NOT cacheable. So even on a cache hit we still run `install-deps` for the OS libs (fast); only the big browser download is skipped.
+- Cache key uses `hashFiles('package-lock.json')`: when dependencies change, the key changes and the cache rebuilds. Otherwise it's reused.
+
+**Where it fits**
+
+- This is pipeline optimization — part of Phase 5 (hardening), brought forward because the slowness was noticeable while learning.
+- Related future optimization: **sharding** (split tests across parallel machines) for when the suite grows. See [ROADMAP.md](ROADMAP.md) Phase 5.
+
+**Files**
+
+- `.github/workflows/ci.yml` (cache step + conditional install steps)
+
+**Learnings**
+
+- In CI, the bottleneck is often **environment setup (downloads), not the tests**. Always check the per-step timing before optimizing.
+- `timeout-minutes` is a safety **fuse**, not a time budget; **caching/sharding** is what actually controls run duration.
+- `actions/cache` + a good `key` is the standard way to skip repeated downloads (same idea as `cache: npm` in `setup-node`).
+
+---
+
 ```markdown
 ## Step N — [Title]
 
