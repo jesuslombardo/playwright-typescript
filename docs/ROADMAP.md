@@ -98,12 +98,12 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Next **large** phase.
 
-| Item                    | Purpose                                            | Status |
-| ----------------------- | -------------------------------------------------- | ------ |
-| **Husky + lint-staged** | Lint/format automatically before each commit       | ✅     |
-| **Allure** _(optional)_ | Richer reports for portfolio / enterprise demos    | ⬜     |
-| **Anti-flaky strategy** | Document waits, retries, `test.describe.configure` | ⬜     |
-| **Dual reporter**       | HTML locally + something clearer in CI logs        | ⬜     |
+| Item                    | Purpose                                            | Status             |
+| ----------------------- | -------------------------------------------------- | ------------------ |
+| **Husky + lint-staged** | Lint/format automatically before each commit       | ✅                 |
+| **Anti-flaky strategy** | Document waits, retries, `test.describe.configure` | 🔜 next (critical) |
+| **Allure / Monocart**   | Richer reports (Monocart = JS-native, no Java)     | 💤 NTH (later)     |
+| **Dual reporter**       | HTML locally + something clearer in CI logs        | 💤 NTH (later)     |
 
 **Already in place (formalize + document):**
 
