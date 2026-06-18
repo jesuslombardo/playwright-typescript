@@ -48,8 +48,10 @@ export default defineConfig({
     /* Sauce Demo uses data-test instead of data-testid */
     testIdAttribute: 'data-test',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    /* Debug evidence on failure — especially useful when downloading CI artifacts */
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
   /*

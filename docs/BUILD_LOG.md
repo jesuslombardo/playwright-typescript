@@ -207,7 +207,13 @@ npm install -D typescript @types/node
 ✅ Fixture typing + POM selector cleanup
 ✅ Phase 2 complete
 ⬜ Phase 3 — Quality and Reporting
+✅ Phase 4 — CI/CD complete (see ROADMAP.md)
 ```
+
+**Next sessions (see [ROADMAP.md](ROADMAP.md)):**
+
+1. Phase 3 — Husky + lint-staged, reporting, anti-flaky docs
+2. Phase 5 + `data/` — when the suite grows
 
 ---
 
@@ -683,7 +689,138 @@ npm test -- tests/auth/login.spec.ts tests/inventory/inventory.spec.ts
 
 ---
 
-## Template for future entries
+## Step 15 — CI/CD: GitHub Actions pipeline + CD via GitHub Pages
+
+**Status:** Done
+
+**What**
+
+- Created `.github/workflows/ci.yml` with three jobs: `quality`, `test`, `deploy-report`.
+- Polished the pipeline: `needs`, `if: failure()`, secrets, failure evidence, GitHub Pages CD.
+- Updated `playwright.config.ts` with screenshot/video on failure.
+- Updated `config/environments.ts` to read optional `SAUCE_*` env vars (secrets pattern).
+- Added CI badge and Pages link to `README.md`.
+
+**Why**
+
+- **CI** validates every push/PR automatically — no "works on my machine."
+- **`needs: quality`** saves CI minutes: don't run browsers if lint/format already failed.
+- **`if: failure()` on artifacts** uploads debug bundles only when tests fail — saves storage.
+- **Secrets** keep real credentials out of git; Sauce Demo defaults still work without secrets.
+- **CD (GitHub Pages)** publishes the HTML report after each successful `main` push — portfolio-ready, shareable link.
+
+**Pipeline flow (explain like a child)**
+
+```
+push or PR
+    │
+    ▼
+┌──────────┐
+│ quality  │  "Is the code tidy?" (ESLint + Prettier)
+└────┬─────┘
+     │ needs: quality (test waits)
+     ▼
+┌──────────┐
+│   test   │  "Do the tests pass?" (Playwright, 3 browsers in CI)
+└────┬─────┘
+     │
+     ├── if failure() → upload playwright-debug artifact (report + test-results)
+     │
+     └── if push to main → upload-pages-artifact
+              │
+              ▼
+     ┌─────────────────┐
+     │ deploy-report   │  CD: publish report to GitHub Pages
+     └─────────────────┘
+```
+
+**Key concepts**
+
+| Concept      | What it means                            | Where                               |
+| ------------ | ---------------------------------------- | ----------------------------------- |
+| **Job**      | One robot on one VM                      | `quality`, `test`, `deploy-report`  |
+| **Step**     | One action inside a job                  | checkout, npm ci, npm test          |
+| **`needs`**  | Job B waits for Job A                    | `test` needs `quality`              |
+| **`if:`**    | Run step/job only when condition is true | `if: failure()`, `if: push to main` |
+| **Artifact** | Zip saved by GitHub for download         | `playwright-debug` on failure       |
+| **Secret**   | Encrypted value in repo Settings         | `SAUCE_STANDARD_PASSWORD`           |
+| **CD**       | Deliver/publish after validation         | GitHub Pages report                 |
+
+**`.github/workflows/ci.yml` — important lines**
+
+```yaml
+test:
+  needs: quality   # don't run Playwright until lint/format pass
+
+- name: Upload debug bundle on failure
+  if: failure()    # only when tests fail
+
+- name: Upload report for GitHub Pages
+  if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+deploy-report:
+  needs: test
+  uses: actions/deploy-pages@v4   # CD — publish to the web
+```
+
+**Secrets — how to use (without hardcoding)**
+
+1. **Local:** create `.env` (gitignored) with `SAUCE_STANDARD_USER=...` — optional for Sauce Demo.
+2. **CI:** GitHub → Settings → Secrets and variables → Actions → New repository secret.
+3. **Workflow:** `${{ secrets.SAUCE_STANDARD_PASSWORD }}` — never print or commit the value.
+4. **Code:** `process.env.SAUCE_STANDARD_PASSWORD || 'secret_sauce'` — fallback when secret is unset.
+
+Sauce Demo passwords are public demo data; the pattern matters for real projects.
+
+**GitHub Pages — one-time setup**
+
+1. Repo **Settings → Pages**
+2. **Source:** GitHub Actions (not "Deploy from branch")
+3. Push to `main` — workflow job `deploy-report` publishes the report
+4. URL: `https://<user>.github.io/<repo>/`
+
+**Playwright failure evidence**
+
+| Setting      | Value               | When captured              |
+| ------------ | ------------------- | -------------------------- |
+| `screenshot` | `only-on-failure`   | Test fails                 |
+| `video`      | `retain-on-failure` | Test fails                 |
+| `trace`      | `on-first-retry`    | CI retry (2 retries on CI) |
+
+**Commands**
+
+```bash
+# Watch a CI run from terminal
+gh run watch
+
+# List recent workflow runs
+gh run list --workflow=ci.yml
+
+# Simulate CI locally (3 browsers + retries)
+CI=true npm test
+```
+
+**Files**
+
+- `.github/workflows/ci.yml`
+- `playwright.config.ts` (screenshot, video)
+- `config/environments.ts` (optional env vars)
+- `README.md` (badge + Pages link)
+- `docs/ROADMAP.md` (Phase 4 marked complete)
+
+**Learnings**
+
+- **CI** = validate on every change. **CD** = publish/deliver after validation. This repo's CD MVP = test report on GitHub Pages.
+- `needs` creates a **dependency chain**; failed upstream job skips downstream work.
+- Two upload mechanisms: `upload-artifact` (download from Actions UI) vs `upload-pages-artifact` (feed GitHub Pages).
+- PRs run CI only (no deploy); CD runs on `main` push only — safe default.
+- `concurrency` + `cancel-in-progress` stops old runs when you push again quickly.
+
+**Next**
+
+- Phase 3: Husky + lint-staged, Allure (optional), anti-flaky docs.
+
+---
 
 ```markdown
 ## Step N — [Title]

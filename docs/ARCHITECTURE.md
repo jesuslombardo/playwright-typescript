@@ -155,6 +155,7 @@ Practice tests run against [Sauce Demo](https://www.saucedemo.com) — a stable 
 
 ## Related documentation
 
+- [Master Roadmap](ROADMAP.md) — priority order and what to build next
 - [Build Log](BUILD_LOG.md) — chronological setup journal
 - [ADR index](adr/README.md) — decision records
 - [ADR-001: POM and folder structure](adr/001-page-object-model-and-folder-structure.md)

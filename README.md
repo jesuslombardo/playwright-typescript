@@ -1,6 +1,10 @@
 # SDET Automation Framework (Playwright + TypeScript)
 
+[![CI/CD](https://github.com/jesuslombardo/playwright-typescript/actions/workflows/ci.yml/badge.svg)](https://github.com/jesuslombardo/playwright-typescript/actions/workflows/ci.yml)
+
 A foundational project to incrementally build a modern, maintainable, and scalable test automation framework, following real-world quality engineering practices.
+
+**Live test report (CD):** after each push to `main`, the latest Playwright HTML report is published to [GitHub Pages](https://jesuslombardo.github.io/playwright-typescript/) _(enable Pages → Source: GitHub Actions in repo settings if the link is 404)_.
 
 ## Vision
 
@@ -76,34 +80,39 @@ This project is considered successful when the repository enables:
 
 ## Documentation
 
+- [Master Roadmap](docs/ROADMAP.md) — priority order, status, and what to build next
 - [Architecture](docs/ARCHITECTURE.md) — current framework design, patterns, and conventions
 - [Build Log](docs/BUILD_LOG.md) — step-by-step journal of every setup decision, command, and learning along the way
 - [Architecture Decision Records](docs/adr/) — rationale behind major technical choices
 
 ## Current Status
 
+```
+✅ Phase 1   Bootstrap
+✅ Phase 2   Automation (6 E2E, POM, fixtures, 4 ADRs)
+✅ Phase 4   CI/CD (pipeline + CD via GitHub Pages)
+⬜ Phase 3   Hooks + reporting + anti-flaky
+⬜ Phase 5   Tags, sharding, hardening
+```
+
+**Phase 4 — CI/CD** (complete)
+
+- [x] GitHub Actions: lint + format + Playwright on push/PR
+- [x] `needs: quality` — tests run only after lint/format pass
+- [x] Cross-browser in CI (Chromium, Firefox, WebKit)
+- [x] Debug artifact on failure (`if: failure()` — report + traces + videos)
+- [x] Secrets pattern for credentials (`SAUCE_*` env vars)
+- [x] CD MVP: Playwright report published to GitHub Pages on `main`
+- [x] BUILD_LOG Step 15 — CI/CD documented
+
 **Phase 2 — Automation Foundation** (complete)
 
-- [x] Folder structure (`pages/`, `components/`, `fixtures/`, `utils/`, `config/`)
-- [x] Architecture documentation (`ARCHITECTURE.md` + ADRs)
-- [x] Environment configuration + test data
-- [x] LoginPage + login tests (happy + unhappy path)
-- [x] InventoryPage + inventory test
-- [x] CartPage + cart test
-- [x] CheckoutPage + checkout test
-- [x] Auth fixture (`loggedInPage`)
-- [x] HeaderComponent (logout + open cart)
-- [x] Utils (`generateCheckoutCustomer`)
+- [x] Folder structure, POM, components, fixtures, utils, config
+- [x] Sauce Demo flows: login, inventory, cart, checkout, logout
+- [x] Architecture docs + 4 ADRs
 
-### Phase 1 — Bootstrap (complete)
+**Phase 1 — Bootstrap** (complete)
 
-- [x] Git repository
-- [x] Node.js project (`package.json`)
-- [x] TypeScript + `tsconfig.json`
-- [x] Playwright setup
-- [x] First E2E test (example)
-- [x] ESLint + Prettier
+- [x] Git, Node, TypeScript, Playwright, ESLint, Prettier, editor settings
 
----
-
-See [Architecture](docs/ARCHITECTURE.md) and the [Build Log](docs/BUILD_LOG.md) for details.
+See [Roadmap](docs/ROADMAP.md), [Architecture](docs/ARCHITECTURE.md), and [Build Log](docs/BUILD_LOG.md) for details.
