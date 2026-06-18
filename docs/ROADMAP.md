@@ -127,13 +127,31 @@ Introduce when static config in `config/` is not enough.
 
 ## Phase 5 — Hardening (when the framework grows)
 
-| Item                           | Purpose                                      |
-| ------------------------------ | -------------------------------------------- |
-| Tags (`@smoke`, `@regression`) | Run subsets of tests                         |
-| Sharding                       | Split suite across parallel CI jobs (faster) |
-| Matrix                         | Multiple Node versions                       |
-| `CONTRIBUTING.md`              | Onboarding for anyone who clones the repo    |
-| More domains                   | API tests, visual regression, etc.           |
+| Item                           | Purpose                                                |
+| ------------------------------ | ------------------------------------------------------ |
+| **Playwright Docker image**    | Real fix for slow CI — preinstalled browsers + OS deps |
+| Tags (`@smoke`, `@regression`) | Run subsets of tests                                   |
+| Sharding                       | Split suite across parallel CI jobs (faster)           |
+| Matrix                         | Multiple Node versions                                 |
+| `CONTRIBUTING.md`              | Onboarding for anyone who clones the repo              |
+| More domains                   | API tests, visual regression, etc.                     |
+
+**Note — CI run time (from Step 16):**
+
+A green run was ~7 min while tests only ran ~24s. The cost is the install step.
+
+- We tried caching `~/.cache/ms-playwright`. The cache works but saved only ~42s: measured cache hit was still ~6m44s.
+- **Root cause:** `--with-deps` / `install-deps` runs `apt-get` for browser OS libraries (~6.5 min). That is NOT cacheable with `actions/cache` (system packages, not files in a folder).
+- **Real fix (do here):** run the job in Playwright's official container so browsers AND OS deps are preinstalled — the install step nearly disappears.
+
+```yaml
+test:
+  runs-on: ubuntu-latest
+  container: mcr.microsoft.com/playwright:v1.XX-jammy # match installed Playwright version
+  # then drop --with-deps; browsers + OS libs already present
+```
+
+> Lesson: `timeout-minutes` is a fuse, not a speed lever. Container image (now) + sharding (when the suite grows) are what actually control run time. See [BUILD_LOG.md](BUILD_LOG.md) Step 16.
 
 ---
 
