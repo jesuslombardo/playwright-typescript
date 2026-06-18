@@ -176,14 +176,15 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 
 ## Map: where to find each concept in the repo
 
-| Concept                        | Where                                     |
-| ------------------------------ | ----------------------------------------- |
-| Page Object Model              | `pages/`, ADR-001                         |
-| Components vs fixtures         | `components/`, `fixtures/`, ADR-004       |
-| Browser strategy (local vs CI) | `playwright.config.ts`, ADR-002           |
-| Code style                     | ESLint/Prettier, ADR-003                  |
-| CI pipeline                    | `.github/workflows/ci.yml`                |
-| CD (GitHub Pages)              | job `deploy-report` in `ci.yml`           |
-| Secrets pattern                | `config/environments.ts`, workflow `env:` |
-| Build history                  | `docs/BUILD_LOG.md` Step 15               |
-| This plan                      | `docs/ROADMAP.md`                         |
+| Concept                        | Where                                           |
+| ------------------------------ | ----------------------------------------------- |
+| Page Object Model              | `pages/`, ADR-001                               |
+| Components vs fixtures         | `components/`, `fixtures/`, ADR-004             |
+| Browser strategy (local vs CI) | `playwright.config.ts`, ADR-002                 |
+| Code style                     | ESLint/Prettier, ADR-003                        |
+| CI pipeline                    | `.github/workflows/ci.yml`                      |
+| CD (GitHub Pages)              | job `deploy-report` in `ci.yml`                 |
+| Secrets pattern                | `config/environments.ts`, workflow `env:`       |
+| CI run time (cache / Docker)   | `ci.yml` cache step, BUILD_LOG Step 16, Phase 5 |
+| Build history                  | `docs/BUILD_LOG.md` Steps 1–16                  |
+| This plan                      | `docs/ROADMAP.md`                               |
