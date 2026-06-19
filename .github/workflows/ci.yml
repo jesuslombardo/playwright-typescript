@@ -37,10 +37,8 @@ jobs:
     name: Playwright
     needs: quality
     runs-on: ubuntu-latest
-    # Temporary: raised from 15 -> 30 because the plain `--with-deps` install
-    # sometimes exceeds 15 min on slow apt mirrors. Revert to 15 once the
-    # Playwright Docker image (Phase 5) removes the install bottleneck.
-    timeout-minutes: 30
+    container: mcr.microsoft.com/playwright:v1.61.0-jammy
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -54,9 +52,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
 
       - name: Run Playwright tests
         env:
