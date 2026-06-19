@@ -29,7 +29,7 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
 🟡 Phase 3   Hooks ✅ (Husky) + anti-flaky ✅ (ADR-005) · reporting 💤 NTH
 ⬜ data/     Structured test data layer
-🟡 Phase 5   Docker image ✅ (fast CI) · tags, sharding, matrix ⬜
+🟡 Phase 5   Docker ✅ · tags + smoke→regression ✅ · API tests 🔜 · sharding/matrix ⬜
 ```
 
 ---
@@ -127,14 +127,23 @@ Introduce when static config in `config/` is not enough.
 
 ## Phase 5 — Hardening (when the framework grows)
 
-| Item                           | Purpose                                                   | Status |
-| ------------------------------ | --------------------------------------------------------- | ------ |
-| **Playwright Docker image**    | Fixed slow CI — preinstalled browsers + OS deps (Step 21) | ✅     |
-| Tags (`@smoke`, `@regression`) | Run subsets of tests                                      | ⬜     |
-| Sharding                       | Split suite across parallel CI jobs (faster)              | ⬜     |
-| Matrix                         | Multiple Node versions                                    | ⬜     |
-| `CONTRIBUTING.md`              | Onboarding for anyone who clones the repo                 | ⬜     |
-| More domains                   | API tests, visual regression, etc.                        | ⬜     |
+| Item                            | Purpose                                                   | Status  |
+| ------------------------------- | --------------------------------------------------------- | ------- |
+| **Playwright Docker image**     | Fixed slow CI — preinstalled browsers + OS deps (Step 21) | ✅      |
+| **Tags (`@smoke`)**             | Smoke → regression staging in CI (Step 22)                | ✅      |
+| **API tests + testing pyramid** | API tests gate E2E in CI (pyramid: API → smoke → e2e)     | 🔜 next |
+| Sharding                        | Split suite across parallel CI jobs (faster)              | ⬜      |
+| Matrix                          | Multiple Node versions                                    | ⬜      |
+| `CONTRIBUTING.md`               | Onboarding for anyone who clones the repo                 | ⬜      |
+| More domains                    | Visual regression, more E2E flows, etc.                   | ⬜      |
+
+**Note — API tests + testing pyramid (next):**
+
+Goal: add API tests and run them **before** E2E in CI — `quality → api → smoke → regression` (pyramid: cheap/low-level first, fail-fast).
+
+- **Sauce Demo has no public API**, so API tests must target a separate public demo API (e.g. `jsonplaceholder.typicode.com`, `reqres.in`, or the GitHub API used in Playwright's docs).
+- Honest framing: since the demo API isn't Sauce Demo's backend, this demonstrates the **capability** (API testing in Playwright via the `request` fixture) and the **pyramid pattern** — not a real contract dependency with the E2E backend. Fine for learning/portfolio; state it that way in interviews.
+- Playwright API testing uses the `request` fixture (no browser): `await request.get(url)` + `expect(res.ok())`.
 
 **Note — CI run time (SOLVED in Step 21):**
 
