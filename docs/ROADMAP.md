@@ -29,7 +29,7 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
 🟡 Phase 3   Hooks ✅ (Husky) + anti-flaky ✅ (ADR-005) · reporting 💤 NTH
 ⬜ data/     Structured test data layer
-⬜ Phase 5   Tags, sharding, hardening
+🟡 Phase 5   Docker image ✅ (fast CI) · tags, sharding, matrix ⬜
 ```
 
 ---
@@ -127,31 +127,33 @@ Introduce when static config in `config/` is not enough.
 
 ## Phase 5 — Hardening (when the framework grows)
 
-| Item                           | Purpose                                                |
-| ------------------------------ | ------------------------------------------------------ |
-| **Playwright Docker image**    | Real fix for slow CI — preinstalled browsers + OS deps |
-| Tags (`@smoke`, `@regression`) | Run subsets of tests                                   |
-| Sharding                       | Split suite across parallel CI jobs (faster)           |
-| Matrix                         | Multiple Node versions                                 |
-| `CONTRIBUTING.md`              | Onboarding for anyone who clones the repo              |
-| More domains                   | API tests, visual regression, etc.                     |
+| Item                           | Purpose                                                   | Status |
+| ------------------------------ | --------------------------------------------------------- | ------ |
+| **Playwright Docker image**    | Fixed slow CI — preinstalled browsers + OS deps (Step 21) | ✅     |
+| Tags (`@smoke`, `@regression`) | Run subsets of tests                                      | ⬜     |
+| Sharding                       | Split suite across parallel CI jobs (faster)              | ⬜     |
+| Matrix                         | Multiple Node versions                                    | ⬜     |
+| `CONTRIBUTING.md`              | Onboarding for anyone who clones the repo                 | ⬜     |
+| More domains                   | API tests, visual regression, etc.                        | ⬜     |
 
-**Note — CI run time (from Step 16):**
+**Note — CI run time (SOLVED in Step 21):**
 
-A green run was ~7 min while tests only ran ~24s. The cost is the install step.
+A green run was ~10 min while the tests only ran ~30s — the cost was the install step.
 
-- We tried caching `~/.cache/ms-playwright`, measured only ~42s saved, and it introduced a cache-miss→timeout failure mode — so we **reverted it** (see BUILD_LOG Step 16). `ci.yml` is back to a single plain install step.
-- **Root cause:** `--with-deps` runs `apt-get` for browser OS libraries (~6.5 min). That is NOT cacheable with `actions/cache` (system packages, not files in a folder).
-- **Real fix (do here):** run the job in Playwright's official container so browsers AND OS deps are preinstalled — the install step nearly disappears. Revisit caching here too, together with Docker.
+- **Root cause:** `--with-deps` runs `apt-get` for browser OS libraries (~7 min) on a blank runner, every run. NOT cacheable with `actions/cache` (system packages, not files). Caching the browsers alone saved only ~42s and was reverted (Step 16).
+- **Fix (done):** run the `test` job in Playwright's official container — browsers + OS deps are preinstalled, so the install step is gone. **Result: ~10 min → ~1m9s.**
+- **Gotcha hit + fixed:** Firefox wouldn't launch as root (`$HOME` ownership). Solved with `options: --user 1001`. See BUILD_LOG Step 21.
 
 ```yaml
 test:
   runs-on: ubuntu-latest
-  container: mcr.microsoft.com/playwright:v1.XX-jammy # match installed Playwright version
-  # then drop --with-deps; browsers + OS libs already present
+  container:
+    image: mcr.microsoft.com/playwright:v1.61.0-jammy # MUST match installed Playwright version
+    options: --user 1001 # run as the runner user so $HOME ownership is consistent
+  # no `playwright install` step needed — image already has browsers + OS deps
 ```
 
-> Lesson: `timeout-minutes` is a fuse, not a speed lever. Container image (now) + sharding (when the suite grows) are what actually control run time. See [BUILD_LOG.md](BUILD_LOG.md) Step 16.
+> Lesson: `timeout-minutes` is a fuse, not a speed lever. The container image (done) + sharding (when the suite grows) are what actually control run time. See [BUILD_LOG.md](BUILD_LOG.md) Steps 16 & 21.
 
 ---
 

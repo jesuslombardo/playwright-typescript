@@ -1042,6 +1042,48 @@ gh pr merge --squash     # only succeeds when checks are green
 
 ---
 
+## Step 21 — Phase 5: run the Playwright job in the official Docker image
+
+**Status:** Done
+
+**What**
+
+- Ran the `test` job inside `mcr.microsoft.com/playwright:v1.61.0-jammy` (`container:` at job level).
+- Removed the `npx playwright install --with-deps` step — the image already ships browsers + OS deps.
+- Lowered `timeout-minutes` 30 → 15 (the install bottleneck is gone) and removed the temporary comment.
+- Added `options: --user 1001` to fix a Firefox launch failure (see below).
+
+**Why**
+
+- A green run was ~10 min, but the tests only ran ~30s. The bottleneck was installing browsers + OS deps on a blank `ubuntu-latest` **every** run (Step 16). The Docker image has them preinstalled, so the install step disappears.
+- **Result (measured): the Playwright job dropped from ~10 min to ~1m9s.**
+
+**The bug we hit (and fixed)**
+
+- First Docker run: Chromium + WebKit launched, but **Firefox failed**: _"Firefox is unable to launch if the $HOME folder isn't owned by the current user"_ (`CanCreateUserNamespace() clone() failure: EPERM`).
+- Cause: the image runs as **root**, but GitHub Actions sets `HOME=/github/home`, owned by the runner user (uid 1001). Firefox refuses to launch when `$HOME` isn't owned by the current user.
+- Fix (from Playwright's official CI docs): run the container as that user via `options: --user 1001`. Then `$HOME` ownership matches and Firefox launches.
+
+```yaml
+container:
+  image: mcr.microsoft.com/playwright:v1.61.0-jammy
+  options: --user 1001
+```
+
+**Files**
+
+- `.github/workflows/ci.yml` (test job)
+
+**Learnings**
+
+- **The image tag must match the installed Playwright version exactly** (`v1.61.0`). Verify tags against the registry — autocomplete suggested `v1.61-jammy`, which **doesn't exist** (the abbreviated tag isn't published; the `.0` is required).
+- **CI catches environment-specific bugs you can't see locally.** The Firefox/$HOME error only appears in the container — proof that the pipeline earns its keep.
+- **Read the error, then the official docs** — the message named the exact problem and the docs had the exact fix. No guessing.
+- `--user 1001` = the GitHub runner user; running the container as it makes mounted dirs (`/github/home`) ownership-consistent.
+- `if: failure()` did its job again — uploaded `playwright-debug` with the traces of the failing run.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
