@@ -90,10 +90,23 @@ This project is considered successful when the repository enables:
 ```
 ✅ Phase 1   Bootstrap
 ✅ Phase 2   Automation (6 E2E, POM, fixtures, 4 ADRs)
-✅ Phase 4   CI/CD (pipeline + CD via GitHub Pages)
-🟡 Phase 3   Hooks ✅ (Husky + lint-staged) · reporting/anti-flaky ⬜
-⬜ Phase 5   Tags, sharding, hardening
+✅ Phase 3   Husky + lint-staged · anti-flaky (ADR-005) · reporting 💤 NTH
+✅ Phase 4   CI/CD (pipeline + CD via GitHub Pages) + branch-protection gate
+🟡 Phase 5   Docker fast CI ✅ · tags + smoke→regression ✅ · API tests 🔜 · sharding/matrix ⬜
 ```
+
+**Phase 5 — Hardening** (in progress)
+
+- [x] Run Playwright in the official Docker image — CI ~10 min → ~1 min (Step 21)
+- [x] Test tags (`@smoke`) + smoke → regression CI staging (Step 22)
+- [ ] API tests + testing pyramid (API → smoke → E2E) — **next**
+- [ ] Sharding, matrix (Node versions), `CONTRIBUTING.md`
+
+**Phase 3 — Quality & Reporting** (core complete)
+
+- [x] Husky + lint-staged — auto lint/format before each commit (Step 18)
+- [x] Anti-flaky strategy — web-first assertions, no hard waits, no `networkidle` (ADR-005, Step 19)
+- [ ] Richer reporting (Monocart / Allure, dual reporter) — nice-to-have
 
 **Phase 4 — CI/CD** (complete)
 
@@ -103,6 +116,7 @@ This project is considered successful when the repository enables:
 - [x] Debug artifact on failure (`if: failure()` — report + traces + videos)
 - [x] Secrets pattern for credentials (`SAUCE_*` env vars)
 - [x] CD MVP: Playwright report published to GitHub Pages on `main`
+- [x] Branch protection — CI is a required **gate**; merges go through PRs (Step 20)
 - [x] BUILD_LOG Step 15 — CI/CD documented
 - [x] BUILD_LOG Step 16 — measured CI run time; browser cache tried + reverted (real fix = Docker image, see Phase 5)
 - [x] BUILD_LOG Step 17 — local secrets via `.env` + `.env.example` (dotenv)

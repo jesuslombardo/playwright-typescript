@@ -1084,6 +1084,46 @@ container:
 
 ---
 
+## Step 22 — Phase 5: test tags + smoke → regression CI staging
+
+**Status:** Done
+
+**What**
+
+- Tagged the 2 critical-path tests with `{ tag: '@smoke' }` (login with valid credentials, complete a purchase).
+- Added npm scripts: `test:smoke` (`playwright test --grep @smoke`) and `test:regression` (`playwright test`, the full suite).
+- Split the single `test` job into two chained jobs: **`Smoke`** (`needs: quality`) → **`Regression`** (`needs: smoke`). `deploy-report` now `needs: regression`.
+- Updated branch protection required checks: `Playwright` → `Smoke` + `Regression` (kept `Lint and format`).
+
+**Why**
+
+- Demonstrates the **testing-pyramid / staging** pattern in CI: cheap/critical first (smoke), expensive/exhaustive after (regression), fail-fast between them — the same "cheap first" idea as `needs: quality`, one level deeper.
+- `@smoke` answers "is the app fundamentally alive?" (can I log in and buy?); the full suite is the regression.
+
+**Honest tradeoff (say this in interviews)**
+
+- With **6 tests (~1 min)**, splitting into 2 jobs is actually **slower**, not faster — each job repeats setup (image pull + `npm ci`). The pattern pays off only when regression is **long** (10–60 min), where a fast smoke gate saves you from spending on the full suite when basics are broken. Here it is **didactic**, done to learn/show the pattern.
+- Alternative real-world shape: run `@smoke` on every PR (fast feedback), full regression nightly or post-merge.
+
+**The gotcha (key lesson)**
+
+- Renaming a job that is a **required status check** breaks merges: branch protection still required `Playwright`, which no longer existed → a PR would hang forever waiting for a check that never reports. **Fix: update the required-checks contexts whenever you rename/split CI jobs.**
+
+**Files**
+
+- `tests/auth/login.spec.ts`, `tests/checkout/checkout.spec.ts` (tags)
+- `package.json` (scripts), `.github/workflows/ci.yml` (smoke + regression jobs)
+- Branch protection contexts (via `gh api`, not in the repo)
+
+**Learnings**
+
+- Tags filter with `--grep @smoke` / `--grep-invert`; `--list` shows the matched set without running.
+- Modern Playwright tag syntax: `test('title', { tag: '@smoke' }, async () => {})`.
+- Required status checks reference job **names** — rename a job, update the protection, or deadlock PRs.
+- The "cheap → expensive" staging pattern is **fractal**: across jobs (quality→test) and within tests (smoke→regression).
+
+---
+
 ```markdown
 ## Step N — [Title]
 
