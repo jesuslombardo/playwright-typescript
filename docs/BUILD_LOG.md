@@ -989,6 +989,59 @@ Reality:  [download browsers ~40s] + [apt-get OS libs ~6.5min]  <- NOT cacheable
 
 ---
 
+## Step 20 — Branch protection: turn CI into a gate (PR workflow)
+
+**Status:** Done
+
+**What**
+
+- Enabled branch protection on `main` via the GitHub API:
+  - **Require a pull request before merging** (`required_approving_review_count: 0` — PR required, no reviewer needed for a solo repo).
+  - **Require status checks to pass**: `Lint and format` + `Playwright`.
+  - **`enforce_admins: true`** — the rule applies to the owner too (no direct pushes to `main`).
+- Adopted the real loop: branch → push → PR → CI as a **required check** → merge only when green.
+
+**Why**
+
+- Before this, CI was a **notifier**, not a **gate**: code could land on `main` and CI only reported failures _after the fact_. Now CI **blocks** merges — it's the authority.
+- Closes the SDLC loop: `branch → PR → CI gate → merge`. This is the standard professional workflow and a common interview topic.
+
+**The key gotcha**
+
+- Required checks must be `Lint and format` and `Playwright` — **NOT** `Publish report (CD)`. On a PR, the `deploy-report` job is **skipped** (its `if` is push-to-`main` only), so requiring it would mean its check never turns green → the PR could **never** merge.
+
+**Commands**
+
+```bash
+# enable protection (require PR + the two CI checks, enforce on admins)
+gh api --method PUT repos/<owner>/<repo>/branches/main/protection --input - <<'JSON'
+{ "required_status_checks": { "strict": false, "contexts": ["Lint and format", "Playwright"] },
+  "enforce_admins": true,
+  "required_pull_request_reviews": { "required_approving_review_count": 0 },
+  "restrictions": null }
+JSON
+
+# the PR loop
+git checkout -b <branch>
+git push -u origin <branch>
+gh pr create --fill
+gh pr checks --watch     # CI runs as a required check
+gh pr merge --squash     # only succeeds when checks are green
+```
+
+**Files**
+
+- No repo files — this is a GitHub setting. Documented here + in ROADMAP.
+
+**Learnings**
+
+- A CI that doesn't block is a **notifier**, not a **gate**. Branch protection is what makes CI an authority.
+- Don't require a status check that can be **skipped** on PRs (the CD job) — it would deadlock merges forever.
+- `enforce_admins: true` makes the gate real even for a solo owner — you genuinely can't bypass it.
+- To undo: `gh api --method DELETE .../branches/main/protection`.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

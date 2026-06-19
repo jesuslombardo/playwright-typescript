@@ -190,5 +190,6 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 | Pre-commit hook (Husky)        | `.husky/pre-commit`, `package.json` lint-staged   |
 | Node version pinning           | `.nvmrc`, `package.json` engines                  |
 | Anti-flaky strategy            | ADR-005, `playwright.config.ts` (retries/traces)  |
-| Build history                  | `docs/BUILD_LOG.md` Steps 1–19                    |
+| Branch protection / PR gate    | GitHub branch rules, BUILD_LOG Step 20            |
+| Build history                  | `docs/BUILD_LOG.md` Steps 1–20                    |
 | This plan                      | `docs/ROADMAP.md`                                 |
