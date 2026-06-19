@@ -33,8 +33,8 @@ jobs:
       - name: Check Prettier formatting
         run: npm run format:check
 
-  test:
-    name: Playwright
+  smoke:
+    name: Smoke
     needs: quality
     runs-on: ubuntu-latest
     container:
@@ -55,11 +55,49 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Playwright tests
+      - name: Run smoke tests
         env:
           SAUCE_STANDARD_USER: ${{ secrets.SAUCE_STANDARD_USER }}
           SAUCE_STANDARD_PASSWORD: ${{ secrets.SAUCE_STANDARD_PASSWORD }}
-        run: npm test
+        run: npm run test:smoke
+
+      - name: Upload smoke debug bundle on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-debug
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  regression:
+    name: Regression
+    needs: smoke
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-jammy
+      options: --user 1001
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run regression suite
+        env:
+          SAUCE_STANDARD_USER: ${{ secrets.SAUCE_STANDARD_USER }}
+          SAUCE_STANDARD_PASSWORD: ${{ secrets.SAUCE_STANDARD_PASSWORD }}
+        run: npm run test:regression
 
       - name: Upload debug bundle on failure
         if: failure()
@@ -79,7 +117,7 @@ jobs:
 
   deploy-report:
     name: Publish report (CD)
-    needs: test
+    needs: regression
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:

@@ -6,7 +6,7 @@ import { testProducts } from '../../config/environments'
 import { generateCheckoutCustomer } from '../../utils/data-generator'
 
 test.describe('Checkout', () => {
-  test('user can complete a purchase', async ({ loggedInPage }) => {
+  test('user can complete a purchase', { tag: '@smoke' }, async ({ loggedInPage }) => {
     const inventoryPage = new InventoryPage(loggedInPage)
 
     await inventoryPage.addProductToCart(testProducts.backpack.slug)

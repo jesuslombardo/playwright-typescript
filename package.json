@@ -9,6 +9,8 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:chromium": "playwright test --project=chromium",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:regression": "playwright test",
     "report": "playwright show-report",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
