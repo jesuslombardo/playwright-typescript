@@ -4,7 +4,7 @@ import { InventoryPage } from '../../pages/inventory.page'
 import { testUsers } from '../../config/environments'
 
 test.describe('Login', () => {
-  test('user can login with valid credentials', async ({ page }) => {
+  test('user can login with valid credentials', { tag: '@smoke' }, async ({ page }) => {
     const loginPage = new LoginPage(page)
 
     await loginPage.goto()
