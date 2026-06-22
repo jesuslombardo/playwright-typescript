@@ -1249,6 +1249,46 @@ npm run test:regression  # all E2E (excludes @api)
 
 ---
 
+## Step 26 — Execution cadence: fast PR gate + nightly regression
+
+**Status:** Done
+
+**What**
+
+- Lightened the **app PR check** to **API + `@smoke`** (was API + full regression). Renamed the job `API + E2E suite` → `API + smoke` and updated the app's branch-protection context to match.
+- Added **`.github/workflows/nightly.yml`** (this repo): `on: schedule` (06:00 UTC) + `workflow_dispatch`, running **API + full cross-browser regression** against `demo-shop-app @ main`.
+- Recorded the policy in **[ADR-007](adr/007-test-execution-cadence.md)** and the cadence table in `CONTRIBUTING.md`.
+
+**Why**
+
+- Two axes that get conflated: **what** runs (`@smoke` vs full regression) and **when** (every PR vs nightly). Industry default: cheap/critical on every PR (fast feedback), heavy cross-browser regression nightly/pre-release. Keeps app PRs fast as the suite grows.
+
+**Commands**
+
+```bash
+gh workflow run nightly.yml      # trigger the nightly on demand
+gh run watch <run-id>            # watch it
+```
+
+**The gotcha (key lesson — again)**
+
+- Renaming the job `API + E2E suite` → `API + smoke` is renaming a **required status check** → had to update the app's branch-protection contexts first, or PRs would deadlock waiting on a check that never reports (same lesson as Steps 22/24, applied on purpose).
+- Tradeoff to own in interviews: a regression-only break from an **app** change can slip past the smoke gate and surface only in the **nightly** — accepted latency-for-speed; `@smoke` must stay honest about covering critical paths.
+
+**Files**
+
+- `.github/workflows/nightly.yml` (new), `docs/adr/007-test-execution-cadence.md` (new)
+- `demo-shop-app/.github/workflows/e2e.yml` (fast gate), app branch-protection contexts (via `gh api`)
+- `CONTRIBUTING.md`
+
+**Learnings**
+
+- A `schedule` workflow only runs from the **default branch** — so you verify it with `workflow_dispatch` (manual), not on the PR that adds it.
+- `cron` in Actions is **UTC**; write the local-time equivalent in a comment so future-you isn't surprised.
+- Cadence is a **policy** decision (trade-offs, alternatives) → it belongs in an ADR, not just a workflow file.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
