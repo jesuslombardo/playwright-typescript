@@ -9,12 +9,13 @@ For rationale behind major choices, see [Architecture Decision Records](adr/).
 A layered Playwright + TypeScript framework for E2E web testing, structured for scalability and maintainability.
 
 ```
-tests/        → what we validate (scenarios)
+tests/        → what we validate (API + E2E scenarios)
 pages/        → how we interact with screens (Page Object Model)
 components/   → shared UI pieces (header, modals, toasts)
 fixtures/     → test setup and dependency injection (Playwright)
 utils/        → non-UI helpers (data generators, formatters)
 config/       → environment URLs, credentials, test data
+app/          → the System Under Test, cloned in (gitignored) — see SUT below
 ```
 
 ## Folder structure
@@ -22,17 +23,13 @@ config/       → environment URLs, credentials, test data
 ```
 playwright-typescript/
 ├── tests/                  # Test specs — scenarios only
-│   ├── auth/
-│   ├── inventory/
-│   ├── cart/
-│   └── checkout/
+│   ├── api/                # API layer (request fixture, @api) — pyramid base
+│   ├── auth/               # login, logout (E2E)
+│   └── products/           # product list, create/delete (E2E)
 ├── pages/                  # Page Objects — one class per screen
-│   ├── authenticated.page.ts  # Base page with shared header (post-login)
 │   ├── login.page.ts
-│   ├── inventory.page.ts
-│   ├── cart.page.ts
-│   └── checkout.page.ts
-├── components/             # Component Objects — shared UI across pages
+│   └── products.page.ts
+├── components/             # Component Objects — shared UI across pages (reserved)
 ├── fixtures/               # Custom Playwright fixtures
 ├── utils/                  # Generic helpers (no DOM)
 ├── config/                 # Environment and test data config
@@ -69,8 +66,8 @@ playwright-typescript/
 
 - UI shared across pages (navbar, modals) lives in `components/`.
 - Page objects **compose** components — they do not duplicate selectors.
-- Post-login pages extend `AuthenticatedPage`, which provides `header: HeaderComponent`.
-- Prefer **has-a** over **is-a** for components; use inheritance only for shared page layout (e.g. authenticated shell).
+- Prefer **has-a** over **is-a** for components; use inheritance only for shared page layout (e.g. an authenticated shell).
+- The current SUT (demo-shop-app) has a deliberately minimal UI — two flat pages (`LoginPage`, `ProductsPage`) and no shared chrome yet — so `components/` is reserved for when shared UI appears. (Sauce Demo's `HeaderComponent`/`AuthenticatedPage` lived here previously; see git history + ADR-004.)
 
 ### Fixtures
 
@@ -86,7 +83,7 @@ Quick reference — use this when unsure:
 
 ```
 Is it a test scenario or assertion?     → tests/
-Is it a full screen (login, checkout)?  → pages/
+Is it a full screen (login, products)?  → pages/
 Is it UI shared across screens?         → components/
 Is it repeated test setup/teardown?     → fixtures/
 Is it a helper with no browser/DOM?     → utils/
@@ -123,12 +120,12 @@ Is it a URL, env var, or credential?   → config/
 
 ### Test organization
 
-- Group specs by feature/domain: `tests/auth/`, `tests/inventory/`, `tests/cart/`.
+- Group specs by feature/domain: `tests/auth/`, `tests/products/`, and `tests/api/` for the API layer.
 - One test file per logical feature area.
 
 ### Test writing rules
 
-- **Actions** → page/component methods only (`loginPage.login()`, `header.openCart()`).
+- **Actions** → page/component methods only (`loginPage.login()`, `productsPage.addProduct()`).
 - **Assertions** → in tests with `expect()` — not inside page objects.
 - **Selectors** → defined in pages/components; tests reuse their locators.
 - **URL checks** → allowed directly in tests (`toHaveURL`).
@@ -149,9 +146,32 @@ Is it a URL, env var, or credential?   → config/
 
 See [ADR-002](adr/002-browser-execution-strategy.md) for rationale.
 
-## Target application (Phase 2)
+## System Under Test (SUT)
 
-Practice tests run against [Sauce Demo](https://www.saucedemo.com) — a stable public app ideal for login, inventory, and cart flows.
+Tests run against **our own app**, [`demo-shop-app`](https://github.com/jesuslombardo/demo-shop-app)
+(Express + SQLite + JWT + Swagger + a minimal vanilla UI), which lives in a separate repo.
+
+- **Locally:** `npm run app:setup` clones it into `./app` (gitignored); Playwright's `webServer` starts it.
+- **In CI:** each test job checks out `demo-shop-app` into `./app` and `webServer` starts it ephemerally.
+- **Override:** set `BASE_URL` to point the suite at an already-running instance and skip `webServer`.
+
+> Phase 2 originally targeted [Sauce Demo](https://www.saucedemo.com), but it has no public API.
+> Owning the SUT lets API and E2E tests share one backend — see [ADR-006](adr/006-custom-sut-and-testing-pyramid.md).
+
+## Testing pyramid
+
+```
+quality → api → smoke → regression → deploy-report (CD)
+   lint     │      │         │            └ publish HTML report to GitHub Pages
+            │      │         └ full E2E suite (--grep-invert @api)
+            │      └ @smoke E2E (critical path)
+            └ API tests (request fixture, browserless) — cheap base, gates E2E
+```
+
+- **API layer** (`tests/api/`, the `api` project): Playwright's `request` fixture, no browser.
+  Tagged `@api` so it runs once in its own project and is excluded from the E2E regression run.
+- **E2E layer** (browser projects): ignore the `*.api.spec.ts` files; Chromium locally, all three in CI.
+- The layers run **cheap-first, fail-fast** via `needs:` in the workflow.
 
 ## Related documentation
 
@@ -162,6 +182,8 @@ Practice tests run against [Sauce Demo](https://www.saucedemo.com) — a stable 
 - [ADR-002: Browser strategy](adr/002-browser-execution-strategy.md)
 - [ADR-003: Code style](adr/003-code-style-eslint-prettier.md)
 - [ADR-004: Components vs fixtures](adr/004-components-vs-fixtures.md)
+- [ADR-005: Anti-flaky test strategy](adr/005-anti-flaky-test-strategy.md)
+- [ADR-006: Custom SUT + testing pyramid](adr/006-custom-sut-and-testing-pyramid.md)
 
 ## Evolution
 

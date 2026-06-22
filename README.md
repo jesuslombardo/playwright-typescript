@@ -92,14 +92,24 @@ This project is considered successful when the repository enables:
 ✅ Phase 2   Automation (6 E2E, POM, fixtures, 4 ADRs)
 ✅ Phase 3   Husky + lint-staged · anti-flaky (ADR-005) · reporting 💤 NTH
 ✅ Phase 4   CI/CD (pipeline + CD via GitHub Pages) + branch-protection gate
-🟡 Phase 5   Docker fast CI ✅ · tags + smoke→regression ✅ · API tests 🔜 · sharding/matrix ⬜
+🟡 Phase 5   Docker fast CI ✅ · tags ✅ · API tests + pyramid ✅ · sharding/matrix ⬜
+```
+
+**Companion app — the System Under Test:** API + E2E tests run against our own
+purpose-built app, **[demo-shop-app](https://github.com/jesuslombardo/demo-shop-app)**
+(Express + SQLite + JWT + Swagger + a minimal UI). This makes the **testing pyramid**
+real — API tests gate E2E in CI, both hitting the same backend. See [ADR-006](docs/adr/006-custom-sut-and-testing-pyramid.md).
+
+```
+CI pyramid:  quality → api → smoke → regression → deploy-report (CD)
 ```
 
 **Phase 5 — Hardening** (in progress)
 
 - [x] Run Playwright in the official Docker image — CI ~10 min → ~1 min (Step 21)
 - [x] Test tags (`@smoke`) + smoke → regression CI staging (Step 22)
-- [ ] API tests + testing pyramid (API → smoke → E2E) — **next**
+- [x] Built own SUT [`demo-shop-app`](https://github.com/jesuslombardo/demo-shop-app) (Step 23)
+- [x] API tests + testing pyramid against the SUT (API → smoke → regression) (Step 24, ADR-006)
 - [ ] Sharding, matrix (Node versions), `CONTRIBUTING.md`
 
 **Phase 3 — Quality & Reporting** (core complete)
