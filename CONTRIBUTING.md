@@ -78,18 +78,36 @@ npm run test:regression
 ## Cross-repo integration check
 
 The app repo doesn't only run its own unit tests — every **PR in `demo-shop-app`**
-also runs **this framework's API + E2E suite against that PR's app version**
+also runs **this framework's API + `@smoke` suite against that PR's app version**
 (workflow: `demo-shop-app/.github/workflows/e2e.yml`, a required check). So an app
-change that would break the tests is caught **before** it reaches `main`.
+change that breaks the contract or a critical path is caught **before** `main`.
 
 ```
 demo-shop-app PR ──▶ checks out playwright-typescript @ main
                  ──▶ uses the PR's app as the SUT
-                 ──▶ runs API (gate) → E2E   ✅/❌ on the PR
+                 ──▶ runs API (gate) → @smoke   ✅/❌ on the PR  (fast)
 ```
 
 This is why "merge the app first" is safe: the app can't merge a change that
-breaks the consumer's tests.
+breaks the critical paths.
+
+## Execution cadence (what runs when)
+
+The full cross-browser regression is **not** run on every PR — it's scheduled.
+See [ADR-007](docs/adr/007-test-execution-cadence.md).
+
+| Trigger                                | What runs                                               |
+| -------------------------------------- | ------------------------------------------------------- |
+| **App PR**                             | API + `@smoke` (fast gate)                              |
+| **This repo's PR**                     | Full pyramid (API → smoke → regression)                 |
+| **Push to `main`** (this repo)         | Full pyramid + CD (report → Pages)                      |
+| **Nightly** (`nightly.yml`, 06:00 UTC) | API + full **cross-browser** regression vs. app `@main` |
+
+Run the nightly on demand from the Actions tab (**Run workflow**) or:
+
+```bash
+gh workflow run nightly.yml
+```
 
 ## Conventions
 

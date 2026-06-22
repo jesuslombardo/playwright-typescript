@@ -1,0 +1,56 @@
+name: Nightly regression
+
+# Full cross-browser E2E regression against demo-shop-app @ main.
+# Per-PR checks are kept fast (API + @smoke); this is the heavy heartbeat that
+# catches deeper regressions, flakiness, and app/dependency drift over time.
+# See docs/adr/007-test-execution-cadence.md.
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 06:00 UTC daily (~03:00 Uruguay time)
+  workflow_dispatch:
+
+jobs:
+  regression:
+    name: Nightly regression
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-jammy
+      options: --user 1001
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout testing repository
+        uses: actions/checkout@v6
+
+      - name: Checkout demo-shop-app (System Under Test)
+        uses: actions/checkout@v6
+        with:
+          repository: jesuslombardo/demo-shop-app
+          path: app
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install testing dependencies
+        run: npm ci
+
+      - name: Install app dependencies
+        run: npm ci
+        working-directory: app
+
+      - name: Full suite — API + cross-browser regression
+        run: npm run test:api && npm run test:regression
+
+      - name: Upload debug bundle on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-debug
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
