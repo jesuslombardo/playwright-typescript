@@ -1457,6 +1457,52 @@ expect(validateProduct(product), JSON.stringify(validateProduct.errors)).toBeTru
 
 ---
 
+## Step 31 — Node version matrix (compatibility)
+
+**Status:** Done
+
+**What**
+
+- Turned the cheapest job — **`api`** — into a **compatibility matrix** over `node: [22, 24]`: `strategy.matrix.node` + `node-version: ${{ matrix.node }}`, `fail-fast: false`.
+- The full API suite now runs **once per Node version, in parallel** — each job also boots the app under that Node.
+- Made the failure artifact name per-version (`api-debug-node${{ matrix.node }}`) so the two jobs don't collide.
+- Updated branch-protection contexts: `API tests` → `API tests (22)` + `API tests (24)`.
+- Decision + honest trade-offs in **[ADR-009](adr/009-node-version-matrix.md)**.
+
+**Why**
+
+- To show the **classic matrix use case** — running the suite across an environment you don't control — which neither sharding (speed) nor cross-browser (already covered) demonstrates.
+- **Node, not browsers**: Playwright already runs all 3 browsers, so a browser matrix would just duplicate coverage; Node is a new axis.
+
+**Sharding vs matrix (the distinction)**
+
+|              | Sharding (Step 30)        | Matrix / compatibility (this step) |
+| ------------ | ------------------------- | ---------------------------------- |
+| **Goal**     | Speed                     | Coverage                           |
+| **Each job** | Runs a **slice** of tests | Runs the **full** suite            |
+| **Varies**   | `--shard=i/N`             | the environment (Node version)     |
+| **Real for** | suites of many minutes    | code with external consumers       |
+
+**Commands**
+
+```bash
+gh pr create ...            # PR runs API tests (22) + API tests (24)
+gh api ...required_status_checks  # swap API tests -> API tests (22)/(24)
+```
+
+**Files**
+
+- `.github/workflows/ci.yml` (`api` job → matrix)
+- `docs/adr/009-node-version-matrix.md`, branch-protection contexts (via `gh api`)
+
+**Learnings**
+
+- A **matrix** = run the same job once per list value; **sharding is just a matrix used for speed**, this is a matrix used for coverage.
+- **Didactic here** — the app pins `node >=22` and has no external users, so Node 24 catches nothing real today; it's the pattern that matters.
+- Same recurring gotcha: a matrix **renames the required check**, so branch-protection contexts must follow.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
