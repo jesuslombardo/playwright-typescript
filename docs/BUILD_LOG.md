@@ -1370,6 +1370,48 @@ npm run test:integration   # boots the app, hits it over HTTP
 
 ---
 
+## Step 29 — Schema-based contract tests against the OpenAPI spec
+
+**Status:** Done
+
+**What**
+
+- Added **contract tests** (`tests/api/contract.api.spec.ts`, tagged `@api @contract`) that validate responses against the provider's **published OpenAPI schema** — fetched at runtime from `/api/openapi.json` (the same Swagger spec that powers the docs) and checked with **Ajv**.
+- First **tightened the spec** (separate app PR): `Product` got `required: [...]` + `additionalProperties: false`, and a new `LoginResponse` schema. A loose schema validates nothing.
+- They run in the `api` project, so they're part of the API layer everywhere `test:api` runs (pyramid, nightly, and the app's cross-repo PR gate).
+
+**Why**
+
+- Functional API tests check **behaviour** (status, auth, CRUD); contract tests check **shape** — exact fields, types, no extras. They catch **drift** (a renamed/retyped/extra field) that a happy-path assertion misses. And they reuse the OpenAPI spec as a **single source of truth** for docs _and_ tests.
+
+**How it works**
+
+```ts
+const spec = await (await ctx.get('/api/openapi.json')).json()
+const validateProduct = ajv.compile(spec.components.schemas.Product)
+// ...
+expect(validateProduct(product), JSON.stringify(validateProduct.errors)).toBeTruthy()
+```
+
+**The key lessons**
+
+- **A contract is only as strict as the schema.** Without `required` + `additionalProperties: false`, validation passes on almost anything — tightening the spec is what makes the test meaningful (and sharpens Swagger docs too).
+- **"Merge app first" — live example:** the contract tests pull the spec from app `@main`, so the app PR (tightened spec + `LoginResponse`) had to merge _before_ this one, or `spec.components.schemas.LoginResponse` would be `undefined`.
+- **Ajv `strict: false`** so it ignores OpenAPI-only keywords (`example`); OpenAPI 3.0 schemas ≈ JSON Schema for simple shapes.
+- This is **schema-based** contract testing, not **Pact** (consumer-driven). Honest framing for interviews.
+
+**Files**
+
+- `tests/api/contract.api.spec.ts`, `package.json` (ajv devDep)
+- `demo-shop-app/src/openapi.js` (tightened — its own PR)
+
+**Learnings**
+
+- The OpenAPI/Swagger spec earns its keep when it's **consumed**: docs (Swagger UI) + machine-checkable contract (Ajv) from the _same_ document.
+- Run contract checks in the API layer (cheap, browserless) — they gate E2E just like the functional API tests.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

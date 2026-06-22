@@ -206,6 +206,7 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 | Node version pinning           | `.nvmrc`, `package.json` engines                      |
 | Anti-flaky strategy            | ADR-005, `playwright.config.ts` (retries/traces)      |
 | API tests (`request` fixture)  | `tests/api/`, `api` project, BUILD_LOG Step 24        |
+| Contract testing (schema)      | `tests/api/contract.api.spec.ts` + OpenAPI, Step 29   |
 | Testing pyramid (API → E2E)    | `.github/workflows/ci.yml`, ADR-006                   |
 | System Under Test (own app)    | `demo-shop-app` repo, ADR-006, BUILD_LOG Step 23      |
 | Ephemeral SUT (`webServer`)    | `playwright.config.ts`, `app:setup` script            |
