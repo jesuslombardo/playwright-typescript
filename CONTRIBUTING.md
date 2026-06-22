@@ -111,6 +111,8 @@ gh workflow run nightly.yml
 
 ## Conventions
 
+- **Language:** all code, comments, commit messages and docs are written in
+  English (consistency over preference) — keep it uniform across both repos.
 - **Actions** live in page/component methods; **assertions** live in tests.
 - **Selectors** via `data-test` (`page.getByTestId(...)`), never raw CSS in specs.
 - No hard waits / `networkidle` — web-first assertions only (see [ADR-005](docs/adr/005-anti-flaky-test-strategy.md)).
