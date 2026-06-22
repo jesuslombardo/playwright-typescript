@@ -76,6 +76,12 @@ export default defineConfig({
         url: 'http://localhost:3000/health',
         reuseExistingServer: !process.env.CI,
         timeout: 60_000,
-        env: { PORT: '3000', DB_PATH: ':memory:' },
+        env: {
+          PORT: '3000',
+          DB_PATH: ':memory:',
+          // Forward the JWT signing key to the SUT. In CI it comes from a
+          // GitHub Secret (job env); locally it falls back to the app's default.
+          JWT_SECRET: process.env.JWT_SECRET || 'demo-shop-dev-secret',
+        },
       },
 })

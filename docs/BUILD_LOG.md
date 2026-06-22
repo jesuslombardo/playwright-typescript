@@ -1329,6 +1329,47 @@ npm run test:integration   # boots the app, hits it over HTTP
 
 ---
 
+## Step 28 — Use a real GitHub Secret end-to-end (`JWT_SECRET`)
+
+**Status:** Done
+
+**What**
+
+- Picked an **honestly sensitive** value to demo the secrets pattern: the app's **JWT signing key** (`JWT_SECRET`), which had a hardcoded default.
+- Created a `JWT_SECRET` **GitHub Secret** in both repos.
+- **App CI** (`demo-shop-app`): injected it into the `integration` job (`env: JWT_SECRET: ${{ secrets.JWT_SECRET }}`) + a masked proof step (`echo "JWT_SECRET provided -> ${JWT_SECRET:+yes}"` → prints `yes`, value stays masked).
+- **Testing pipeline**: workflow-level `env: JWT_SECRET` in `ci.yml` + `nightly.yml`, **forwarded to the SUT** through `playwright.config.ts` (`webServer.env.JWT_SECRET = process.env.JWT_SECRET || 'demo-shop-dev-secret'`).
+- Documented in `.env.example` + CONTRIBUTING.
+
+**Why**
+
+- The earlier `SAUCE_*` secrets disappeared when we moved to public demo creds — leaving the pattern unused. The JWT key is a value that genuinely _should not_ be hardcoded, so it's a truthful demonstration: **secret in CI, safe default locally**.
+
+**Why it doesn't break anything**
+
+- The app signs and verifies with the _same_ `JWT_SECRET` within a process — whatever value it is. Tests assert the _behaviour_ (login → token → authorized request), not the secret, so any valid key works.
+
+**The key lessons**
+
+- **Two scopes** for `env:` — **job-level** (app: only the `integration` job that runs the app) vs **workflow-level** (testing repo: every job that boots the SUT). Scope to where it's needed.
+- **Crossing the repo boundary**: a secret in the test pipeline only reaches the SUT because `webServer.env` _forwards_ it to the spawned app process — env vars don't cross process boundaries by themselves.
+- **Proving a secret without leaking it**: `${VAR:+yes}` shows presence; GitHub also masks any secret value that would appear in logs.
+- Public value → committed default; sensitive value → Secret + `.env` (gitignored). Same `process.env.X || default` code serves both.
+
+**Files**
+
+- `demo-shop-app/.github/workflows/ci.yml` (integration `env` + proof step)
+- `.github/workflows/ci.yml`, `.github/workflows/nightly.yml` (workflow-level `env`)
+- `playwright.config.ts` (forward via `webServer.env`), `.env.example`, `CONTRIBUTING.md`
+- `JWT_SECRET` GitHub Secrets in both repos (not in the repo)
+
+**Learnings**
+
+- A secret is only useful if something **consumes** it at runtime — trace the path: Secret → workflow `env` → process → (here) `webServer.env` → app.
+- Keep a working **default** so local runs and forks (no secret access) still pass.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
