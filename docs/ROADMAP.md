@@ -29,7 +29,7 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
 🟡 Phase 3   Hooks ✅ (Husky) + anti-flaky ✅ (ADR-005) · reporting 💤 NTH
 ⬜ data/     Structured test data layer
-🟡 Phase 5   Docker ✅ · tags ✅ · API tests + pyramid ✅ · sharding/matrix ⬜
+🟡 Phase 5   Docker ✅ · tags ✅ · API tests + pyramid ✅ · sharding ✅ · matrix ⬜
 ```
 
 ---
