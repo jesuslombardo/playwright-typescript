@@ -9,6 +9,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Injected into the SUT via playwright.config.ts webServer.env. Demonstrates the
+# secrets pattern: a real secret (the JWT signing key) in CI, default locally.
+env:
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
 jobs:
   quality:
     name: Lint and format

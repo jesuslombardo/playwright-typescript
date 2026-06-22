@@ -109,6 +109,21 @@ Run the nightly on demand from the Actions tab (**Run workflow**) or:
 gh workflow run nightly.yml
 ```
 
+## Secrets
+
+Config uses `process.env.X || default`, so the same code works with or without secrets:
+
+- **Public values** (e.g. the demo creds `standard_user` / `secret_sauce`) ship as
+  committed defaults — nothing to hide.
+- **Sensitive values** come from a **GitHub Secret** in CI and a gitignored `.env`
+  locally; never committed. Example: **`JWT_SECRET`** (the SUT's JWT signing key) is
+  injected from a Secret in CI and forwarded to the app via `playwright.config.ts`
+  (`webServer.env`); locally it falls back to the app's default.
+
+`env:` can be scoped at **job** level (only where needed) or **workflow** level
+(shared by all jobs) — see `ci.yml` / `nightly.yml`. To prove a secret is wired
+without leaking it: `echo "X provided -> ${X:+yes}"` (GitHub also masks secret values in logs).
+
 ## Conventions
 
 - **Language:** all code, comments, commit messages and docs are written in
