@@ -29,7 +29,7 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
 🟡 Phase 3   Hooks ✅ (Husky) + anti-flaky ✅ (ADR-005) · reporting 💤 NTH
 ⬜ data/     Structured test data layer
-🟡 Phase 5   Docker ✅ · tags ✅ · API tests + pyramid ✅ · sharding ✅ · matrix ⬜
+🟡 Phase 5   Docker ✅ · tags ✅ · API tests + pyramid ✅ · sharding ✅ · matrix ✅
 ```
 
 ---
@@ -136,7 +136,7 @@ Introduce when static config in `config/` is not enough.
 | **Execution cadence**            | Fast PR gate (API+smoke) + nightly cross-browser regression (Step 26, ADR-007) | ✅            |
 | **App test tiers**               | demo-shop-app unit → integration mini-pyramid in its own CI (Step 27)          | ✅            |
 | Sharding                         | Split regression across parallel shards + merge-reports (Step 30, ADR-008)     | ✅ (didactic) |
-| Matrix                           | Multiple Node versions                                                         | ⬜            |
+| Matrix                           | `api` job over Node `[22, 24]` — compatibility matrix (Step 31, ADR-009)       | ✅ (didactic) |
 | `CONTRIBUTING.md`                | Two-repo flow + onboarding (Step 25)                                           | ✅            |
 | More domains                     | Visual regression, more E2E flows, etc.                                        | ⬜            |
 
@@ -208,6 +208,7 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 | API tests (`request` fixture)  | `tests/api/`, `api` project, BUILD_LOG Step 24        |
 | Contract testing (schema)      | `tests/api/contract.api.spec.ts` + OpenAPI, Step 29   |
 | Sharding + merge-reports       | `.github/workflows/ci.yml` matrix, ADR-008, Step 30   |
+| Compatibility matrix (Node)    | `api` job `matrix.node`, ADR-009, Step 31             |
 | Testing pyramid (API → E2E)    | `.github/workflows/ci.yml`, ADR-006                   |
 | System Under Test (own app)    | `demo-shop-app` repo, ADR-006, BUILD_LOG Step 23      |
 | Ephemeral SUT (`webServer`)    | `playwright.config.ts`, `app:setup` script            |

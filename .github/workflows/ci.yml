@@ -43,11 +43,21 @@ jobs:
   # it lives in its own repo, so we check it out into ./app and Playwright's
   # webServer starts it from source (see playwright.config.ts).
 
+  # Matrix (compatibility): run the FULL api suite once per Node version, in
+  # parallel. This is COVERAGE, not speed — unlike sharding (which splits one
+  # suite across machines), each job here runs every test, just on a different
+  # Node. Didactic at our scale (the app targets Node 22), but it's the real
+  # pattern a published library uses to catch "works on my Node, breaks on
+  # yours". The matrix renames the check → API tests (22) / (24). See ADR-009.
   api:
     name: API tests
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
 
     steps:
       - name: Checkout testing repository
@@ -62,7 +72,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ${{ matrix.node }}
           cache: npm
 
       - name: Install testing dependencies
@@ -79,7 +89,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: api-debug
+          name: api-debug-node${{ matrix.node }}
           path: |
             playwright-report/
             test-results/
