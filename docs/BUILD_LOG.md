@@ -1289,6 +1289,46 @@ gh run watch <run-id>            # watch it
 
 ---
 
+## Step 27 — App test tiers: real unit tests + a mini-pyramid in `demo-shop-app`
+
+**Status:** Done
+
+**What** (in the `demo-shop-app` repo)
+
+- Added genuine **unit tests** (`test/unit/`) for the important pure functions — `authenticate`, `requireAuth`/`issueToken` (JWT, via fake `req`/`res`), and `isValidProduct` — with no HTTP and no DB.
+- Reclassified the existing HTTP test as **integration** (`test/integration/api.test.js`): it boots the app and exercises it over HTTP. The CI job was mislabelled "Unit tests" when it was really integration.
+- Split the app's CI into a **mini-pyramid**: `Lint → Unit tests → Integration tests → publish-image`. Added `Integration tests` to the app's required checks.
+- Scripts: `test:unit` / `test:integration`.
+
+**Why**
+
+- Make the pyramid's **levels** explicit _inside_ the app too: unit = isolate pure logic (fast, pinpoints the broken function); integration = the stack wired together. Same cheap-first / fail-fast idea as the cross-repo pyramid, one layer down.
+
+**Commands**
+
+```bash
+npm run test:unit          # pure functions, no I/O
+npm run test:integration   # boots the app, hits it over HTTP
+```
+
+**The gotchas (two good ones)**
+
+- A unit test caught `isValidProduct(null)` returning **`null`** (from `&&` short-circuit), not `false`. A predicate should return a real boolean → wrapped in `Boolean(...)`. This is exactly the value of unit tests: integration still rejected the input, but the unit level exposed the dirty return type.
+- `node --test test/unit/` treats a **bare directory as a file** (`MODULE_NOT_FOUND`) in Node 22.23 → use the glob form `node --test test/unit/*.test.js` (shell-expanded).
+
+**Files** (in `demo-shop-app`)
+
+- `test/unit/auth.test.js`, `test/unit/products.test.js`, `test/integration/api.test.js`
+- `src/products.router.js` (export + boolean fix), `package.json`, `.github/workflows/ci.yml`, `README.md`
+
+**Learnings**
+
+- **Unit vs integration** is about _isolation_: no I/O = unit; boots the app / touches HTTP or DB = integration.
+- Predicates should return booleans, not "falsy-ish" values — small habit, fewer surprises.
+- Pyramids **nest**: the app has unit→integration; the framework has API→smoke→regression; together they cover the system at every level.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
