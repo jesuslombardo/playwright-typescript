@@ -170,6 +170,12 @@ quality → api → smoke → regression → deploy-report (CD)
 
 - **API layer** (`tests/api/`, the `api` project): Playwright's `request` fixture, no browser.
   Tagged `@api` so it runs once in its own project and is excluded from the E2E regression run.
+  Two flavours:
+  - **Functional** (`products.api.spec.ts`) — behaviour: status codes, auth, CRUD.
+  - **Contract** (`contract.api.spec.ts`, `@contract`) — _shape_: responses are validated with
+    Ajv against the provider's **OpenAPI schema** (fetched from `/api/openapi.json`, the same
+    Swagger spec used for docs). Catches drift that functional happy-paths miss. Schema-based,
+    not Pact. See [BUILD_LOG Step 29](BUILD_LOG.md).
 - **E2E layer** (browser projects): ignore the `*.api.spec.ts` files; Chromium locally, all three in CI.
 - The layers run **cheap-first, fail-fast** via `needs:` in the workflow.
 
