@@ -1,28 +1,33 @@
 export const environments = {
-  sauceDemo: {
-    baseURL: 'https://www.saucedemo.com',
+  /*
+   * System Under Test = our own demo-shop-app.
+   * Local: webServer starts it on :3000 (see playwright.config.ts).
+   * CI:    same, started from a checkout of the app repo.
+   * BASE_URL overrides both when the app is already running elsewhere.
+   */
+  demoShop: {
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
   },
 } as const
 
 /*
- * Sauce Demo credentials are public demo values — safe to commit as defaults.
- * For real apps: set SAUCE_* env vars locally (.env) or as GitHub Secrets in CI.
- * Empty secret in CI falls back to the default (see || below).
+ * Demo credentials are public values (mirroring Sauce Demo) — safe to commit as
+ * defaults. The app itself accepts standard_user / secret_sauce out of the box.
+ * For a private app: set DEMO_* locally (.env) or as GitHub Secrets in CI.
  */
 export const testUsers = {
   standard: {
-    username: process.env.SAUCE_STANDARD_USER || 'standard_user',
-    password: process.env.SAUCE_STANDARD_PASSWORD || 'secret_sauce',
+    username: process.env.DEMO_USER || 'standard_user',
+    password: process.env.DEMO_PASSWORD || 'secret_sauce',
   },
-  lockedOut: {
-    username: 'locked_out_user',
-    password: 'secret_sauce',
+  invalid: {
+    username: 'wrong_user',
+    password: 'wrong_password',
   },
 } as const
 
 export const testProducts = {
   backpack: {
-    slug: 'sauce-labs-backpack',
     name: 'Sauce Labs Backpack',
   },
 } as const

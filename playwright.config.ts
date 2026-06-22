@@ -3,22 +3,30 @@ import 'dotenv/config'
 import { defineConfig, devices } from '@playwright/test'
 import { environments } from './config/environments'
 
-const chromiumProject = {
-  name: 'chromium',
-  use: { ...devices['Desktop Chrome'] },
+/** API specs are browserless (`request` fixture) — kept in their own project. */
+const API_SPECS = /.*\.api\.spec\.ts$/
+
+const apiProject = {
+  name: 'api',
+  testMatch: API_SPECS,
 }
 
+const browserProject = (name: string, device: string) => ({
+  name,
+  use: { ...devices[device] },
+  testIgnore: API_SPECS,
+})
+
 const crossBrowserProjects = [
-  chromiumProject,
-  {
-    name: 'firefox',
-    use: { ...devices['Desktop Firefox'] },
-  },
-  {
-    name: 'webkit',
-    use: { ...devices['Desktop Safari'] },
-  },
+  browserProject('chromium', 'Desktop Chrome'),
+  browserProject('firefox', 'Desktop Firefox'),
+  browserProject('webkit', 'Desktop Safari'),
 ]
+
+const browserProjects =
+  process.env.CI || process.env.CROSS_BROWSER
+    ? crossBrowserProjects
+    : [browserProject('chromium', 'Desktop Chrome')]
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -37,9 +45,10 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: environments.sauceDemo.baseURL,
+    /* SUT = our own demo-shop-app (see config/environments.ts + webServer below) */
+    baseURL: environments.demoShop.baseURL,
 
-    /* Sauce Demo uses data-test instead of data-testid */
+    /* The app exposes data-test attributes (same convention as Sauce Demo) */
     testIdAttribute: 'data-test',
 
     /* Debug evidence on failure — especially useful when downloading CI artifacts */
@@ -49,37 +58,24 @@ export default defineConfig({
   },
 
   /*
-   * Browser strategy:
-   * - Local (default): Chromium only — fast feedback while developing.
-   * - CI (CI=true): all browsers — cross-browser coverage on pipeline.
-   * - Manual: npm run test:cross-browser — all browsers locally before release.
+   * api    → browserless request-fixture tests (the pyramid's base).
+   * browsers → E2E. Local: Chromium only (fast). CI / CROSS_BROWSER: all three.
    */
-  projects: process.env.CI || process.env.CROSS_BROWSER ? crossBrowserProjects : [chromiumProject],
+  projects: [apiProject, ...browserProjects],
 
-  /* Test against mobile viewports. */
-  // {
-  //   name: 'Mobile Chrome',
-  //   use: { ...devices['Pixel 5'] },
-  // },
-  // {
-  //   name: 'Mobile Safari',
-  //   use: { ...devices['iPhone 12'] },
-  // },
-
-  /* Test against branded browsers. */
-  // {
-  //   name: 'Microsoft Edge',
-  //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-  // },
-  // {
-  //   name: 'Google Chrome',
-  //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-  // },
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  /*
+   * Start the System Under Test before tests run.
+   * The app lives in its own repo (jesuslombardo/demo-shop-app); both locally
+   * and in CI it is placed in ./app and started from source here.
+   * Set BASE_URL to skip this and point at an already-running instance.
+   */
+  webServer: process.env.BASE_URL
+    ? undefined
+    : {
+        command: 'node app/server.js',
+        url: 'http://localhost:3000/health',
+        reuseExistingServer: !process.env.CI,
+        timeout: 60_000,
+        env: { PORT: '3000', DB_PATH: ':memory:' },
+      },
 })
