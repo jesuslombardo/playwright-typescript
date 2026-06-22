@@ -127,15 +127,16 @@ Introduce when static config in `config/` is not enough.
 
 ## Phase 5 — Hardening (when the framework grows)
 
-| Item                            | Purpose                                                      | Status       |
-| ------------------------------- | ------------------------------------------------------------ | ------------ |
-| **Playwright Docker image**     | Fixed slow CI — preinstalled browsers + OS deps (Step 21)    | ✅           |
-| **Tags (`@smoke`)**             | Smoke → regression staging in CI (Step 22)                   | ✅           |
-| **API tests + testing pyramid** | API tests gate E2E in CI (pyramid: API → smoke → regression) | ✅ (Step 24) |
-| Sharding                        | Split suite across parallel CI jobs (faster)                 | ⬜           |
-| Matrix                          | Multiple Node versions                                       | ⬜           |
-| `CONTRIBUTING.md`               | Onboarding for anyone who clones the repo                    | ⬜           |
-| More domains                    | Visual regression, more E2E flows, etc.                      | ⬜           |
+| Item                             | Purpose                                                             | Status       |
+| -------------------------------- | ------------------------------------------------------------------- | ------------ |
+| **Playwright Docker image**      | Fixed slow CI — preinstalled browsers + OS deps (Step 21)           | ✅           |
+| **Tags (`@smoke`)**              | Smoke → regression staging in CI (Step 22)                          | ✅           |
+| **API tests + testing pyramid**  | API tests gate E2E in CI (pyramid: API → smoke → regression)        | ✅ (Step 24) |
+| **Cross-repo integration check** | App PRs run this suite against the PR app — required gate (Step 25) | ✅           |
+| Sharding                         | Split suite across parallel CI jobs (faster)                        | ⬜           |
+| Matrix                           | Multiple Node versions                                              | ⬜           |
+| `CONTRIBUTING.md`                | Two-repo flow + onboarding (Step 25)                                | ✅           |
+| More domains                     | Visual regression, more E2E flows, etc.                             | ⬜           |
 
 **Note — API tests + testing pyramid (DONE, Step 24):**
 
@@ -188,24 +189,26 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 
 ## Map: where to find each concept in the repo
 
-| Concept                        | Where                                             |
-| ------------------------------ | ------------------------------------------------- |
-| Page Object Model              | `pages/`, ADR-001                                 |
-| Components vs fixtures         | `components/`, `fixtures/`, ADR-004               |
-| Browser strategy (local vs CI) | `playwright.config.ts`, ADR-002                   |
-| Code style                     | ESLint/Prettier, ADR-003                          |
-| CI pipeline                    | `.github/workflows/ci.yml`                        |
-| CD (GitHub Pages)              | job `deploy-report` in `ci.yml`                   |
-| Secrets pattern                | `config/environments.ts`, workflow `env:`         |
-| Local secrets (`.env`)         | `.env.example`, `playwright.config.ts` (dotenv)   |
-| CI run time (Docker fix)       | BUILD_LOG Step 16, Phase 5 (cache tried+reverted) |
-| Pre-commit hook (Husky)        | `.husky/pre-commit`, `package.json` lint-staged   |
-| Node version pinning           | `.nvmrc`, `package.json` engines                  |
-| Anti-flaky strategy            | ADR-005, `playwright.config.ts` (retries/traces)  |
-| API tests (`request` fixture)  | `tests/api/`, `api` project, BUILD_LOG Step 24    |
-| Testing pyramid (API → E2E)    | `.github/workflows/ci.yml`, ADR-006               |
-| System Under Test (own app)    | `demo-shop-app` repo, ADR-006, BUILD_LOG Step 23  |
-| Ephemeral SUT (`webServer`)    | `playwright.config.ts`, `app:setup` script        |
-| Branch protection / PR gate    | GitHub branch rules, BUILD_LOG Step 20            |
-| Build history                  | `docs/BUILD_LOG.md` Steps 1–24                    |
-| This plan                      | `docs/ROADMAP.md`                                 |
+| Concept                        | Where                                              |
+| ------------------------------ | -------------------------------------------------- |
+| Page Object Model              | `pages/`, ADR-001                                  |
+| Components vs fixtures         | `components/`, `fixtures/`, ADR-004                |
+| Browser strategy (local vs CI) | `playwright.config.ts`, ADR-002                    |
+| Code style                     | ESLint/Prettier, ADR-003                           |
+| CI pipeline                    | `.github/workflows/ci.yml`                         |
+| CD (GitHub Pages)              | job `deploy-report` in `ci.yml`                    |
+| Secrets pattern                | `config/environments.ts`, workflow `env:`          |
+| Local secrets (`.env`)         | `.env.example`, `playwright.config.ts` (dotenv)    |
+| CI run time (Docker fix)       | BUILD_LOG Step 16, Phase 5 (cache tried+reverted)  |
+| Pre-commit hook (Husky)        | `.husky/pre-commit`, `package.json` lint-staged    |
+| Node version pinning           | `.nvmrc`, `package.json` engines                   |
+| Anti-flaky strategy            | ADR-005, `playwright.config.ts` (retries/traces)   |
+| API tests (`request` fixture)  | `tests/api/`, `api` project, BUILD_LOG Step 24     |
+| Testing pyramid (API → E2E)    | `.github/workflows/ci.yml`, ADR-006                |
+| System Under Test (own app)    | `demo-shop-app` repo, ADR-006, BUILD_LOG Step 23   |
+| Ephemeral SUT (`webServer`)    | `playwright.config.ts`, `app:setup` script         |
+| Cross-repo integration gate    | `demo-shop-app/.github/workflows/e2e.yml`, Step 25 |
+| Two-repo contributor flow      | `CONTRIBUTING.md`                                  |
+| Branch protection / PR gate    | GitHub branch rules, BUILD_LOG Steps 20, 25        |
+| Build history                  | `docs/BUILD_LOG.md` Steps 1–25                     |
+| This plan                      | `docs/ROADMAP.md`                                  |

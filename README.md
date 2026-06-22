@@ -84,6 +84,7 @@ This project is considered successful when the repository enables:
 - [Architecture](docs/ARCHITECTURE.md) — current framework design, patterns, and conventions
 - [Build Log](docs/BUILD_LOG.md) — step-by-step journal of every setup decision, command, and learning along the way
 - [Architecture Decision Records](docs/adr/) — rationale behind major technical choices
+- [Contributing](CONTRIBUTING.md) — two-repo workflow, local setup, and the cross-repo integration check
 
 ## Current Status
 
@@ -110,7 +111,9 @@ CI pyramid:  quality → api → smoke → regression → deploy-report (CD)
 - [x] Test tags (`@smoke`) + smoke → regression CI staging (Step 22)
 - [x] Built own SUT [`demo-shop-app`](https://github.com/jesuslombardo/demo-shop-app) (Step 23)
 - [x] API tests + testing pyramid against the SUT (API → smoke → regression) (Step 24, ADR-006)
-- [ ] Sharding, matrix (Node versions), `CONTRIBUTING.md`
+- [x] Cross-repo integration check — app PRs run this suite as a required gate (Step 25)
+- [x] `CONTRIBUTING.md` — two-repo workflow (Step 25)
+- [ ] Sharding, matrix (Node versions)
 
 **Phase 3 — Quality & Reporting** (core complete)
 

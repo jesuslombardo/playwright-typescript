@@ -1211,6 +1211,44 @@ npm run test:regression  # all E2E (excludes @api)
 
 ---
 
+## Step 25 — Cross-repo integration check + `CONTRIBUTING.md`
+
+**Status:** Done
+
+**What**
+
+- Added a workflow **in the app repo** (`demo-shop-app/.github/workflows/e2e.yml`, `on: pull_request`) that runs **this** framework's suite against the app's PR version:
+  - checks out `playwright-typescript` @ `main` into `tests/`,
+  - checks out the **PR's app** into `tests/app` (so `webServer` starts _that_ version),
+  - runs `npm run test:api && npm run test:regression` (API gates E2E).
+- Made it a **required check** on `demo-shop-app`'s `main` (branch protection: `Lint` + `Unit tests` + `API + E2E suite`, enforce_admins on).
+- Bumped the app's `ci.yml` actions to v6 (cleared the Node 20 deprecation warning).
+- Wrote **`CONTRIBUTING.md`** documenting the two-repo flow, the "app first" rule, and this check.
+
+**Why**
+
+- A PR in the app previously ran only the app's **own unit tests** — it could pass yet still break the consumer's E2E. This closes that gap: an app change that breaks the tests now **fails the app PR before merge**. Standard cross-repo / integration-gate pattern.
+
+**The gotcha (key lesson)**
+
+- The check **lives in the app repo but runs the test repo's code** — so the gate appears as a status **on the app PR**, using only `GITHUB_TOKEN` (both repos public). No PAT, no `repository_dispatch` callback needed.
+- Chosen over `repository_dispatch` (app → test repo) because that needs a PAT _and_ a manual Commit-Status callback to surface red/green on the PR. Running the suite _from_ the app repo is simpler and self-reporting.
+- Direction matters: this repo's CI pulls app `@ main` (so "merge app first"); the app's PR check pulls this repo `@ main` (so it tests against the current suite). Together they keep both sides honest.
+
+**Files**
+
+- `demo-shop-app/.github/workflows/e2e.yml` (new), `demo-shop-app/.github/workflows/ci.yml` (v6)
+- `CONTRIBUTING.md` (this repo)
+- App branch-protection contexts (via `gh api`, not in the repo)
+
+**Learnings**
+
+- A `pull_request` workflow added _on a branch_ runs for **its own PR** (head-ref workflow) — so the PR that adds the check also self-tests it.
+- One job can host a mini-pyramid: `test:api && test:regression` — `&&` makes API a hard gate for E2E without extra jobs.
+- "Which repo does the checkout, and at which ref" **is** the integration contract between two repos.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
