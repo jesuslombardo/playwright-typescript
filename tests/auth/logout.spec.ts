@@ -1,16 +1,15 @@
 import { test, expect } from '../../fixtures/auth.fixture'
 import { LoginPage } from '../../pages/login.page'
-import { InventoryPage } from '../../pages/inventory.page'
+import { ProductsPage } from '../../pages/products.page'
 
 test.describe('Logout', () => {
-  test('user can logout from inventory page', async ({ loggedInPage }) => {
-    const inventoryPage = new InventoryPage(loggedInPage)
+  test('user can logout and is returned to the login page', async ({ loggedInPage }) => {
+    const productsPage = new ProductsPage(loggedInPage)
 
-    await expect(inventoryPage.title).toBeVisible()
-    await inventoryPage.header.logout()
+    await expect(productsPage.title).toBeVisible()
+    await productsPage.logout()
 
     const loginPage = new LoginPage(loggedInPage)
-    await expect(loggedInPage).toHaveURL('/')
     await expect(loginPage.loginButton).toBeVisible()
   })
 })

@@ -33,18 +33,26 @@ jobs:
       - name: Check Prettier formatting
         run: npm run format:check
 
-  smoke:
-    name: Smoke
+  # ── Testing pyramid: API first (cheap, fail-fast), then E2E. ──────────────
+  # Every test job spins up the System Under Test (demo-shop-app) ephemerally:
+  # it lives in its own repo, so we check it out into ./app and Playwright's
+  # webServer starts it from source (see playwright.config.ts).
+
+  api:
+    name: API tests
     needs: quality
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.61.0-jammy
-      options: --user 1001
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout repository
+      - name: Checkout testing repository
         uses: actions/checkout@v6
+
+      - name: Checkout demo-shop-app (System Under Test)
+        uses: actions/checkout@v6
+        with:
+          repository: jesuslombardo/demo-shop-app
+          path: app
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -52,13 +60,59 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install testing dependencies
         run: npm ci
 
+      - name: Install app dependencies
+        run: npm ci
+        working-directory: app
+
+      - name: Run API tests
+        run: npm run test:api
+
+      - name: Upload API debug bundle on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-debug
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  smoke:
+    name: Smoke
+    needs: api
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-jammy
+      options: --user 1001
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout testing repository
+        uses: actions/checkout@v6
+
+      - name: Checkout demo-shop-app (System Under Test)
+        uses: actions/checkout@v6
+        with:
+          repository: jesuslombardo/demo-shop-app
+          path: app
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install testing dependencies
+        run: npm ci
+
+      - name: Install app dependencies
+        run: npm ci
+        working-directory: app
+
       - name: Run smoke tests
-        env:
-          SAUCE_STANDARD_USER: ${{ secrets.SAUCE_STANDARD_USER }}
-          SAUCE_STANDARD_PASSWORD: ${{ secrets.SAUCE_STANDARD_PASSWORD }}
         run: npm run test:smoke
 
       - name: Upload smoke debug bundle on failure
@@ -81,8 +135,14 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Checkout repository
+      - name: Checkout testing repository
         uses: actions/checkout@v6
+
+      - name: Checkout demo-shop-app (System Under Test)
+        uses: actions/checkout@v6
+        with:
+          repository: jesuslombardo/demo-shop-app
+          path: app
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -90,13 +150,14 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install testing dependencies
         run: npm ci
 
-      - name: Run regression suite
-        env:
-          SAUCE_STANDARD_USER: ${{ secrets.SAUCE_STANDARD_USER }}
-          SAUCE_STANDARD_PASSWORD: ${{ secrets.SAUCE_STANDARD_PASSWORD }}
+      - name: Install app dependencies
+        run: npm ci
+        working-directory: app
+
+      - name: Run regression suite (E2E)
         run: npm run test:regression
 
       - name: Upload debug bundle on failure

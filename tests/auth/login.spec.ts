@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { LoginPage } from '../../pages/login.page'
-import { InventoryPage } from '../../pages/inventory.page'
+import { ProductsPage } from '../../pages/products.page'
 import { testUsers } from '../../config/environments'
 
 test.describe('Login', () => {
@@ -10,19 +10,18 @@ test.describe('Login', () => {
     await loginPage.goto()
     await loginPage.login(testUsers.standard.username, testUsers.standard.password)
 
-    const inventoryPage = new InventoryPage(page)
-    await expect(page).toHaveURL(/inventory/)
-    await expect(inventoryPage.title).toBeVisible()
+    const productsPage = new ProductsPage(page)
+    await expect(page).toHaveURL(/products/)
+    await expect(productsPage.title).toBeVisible()
   })
 
-  test('locked out user sees an error message', async ({ page }) => {
+  test('invalid credentials show an error message', async ({ page }) => {
     const loginPage = new LoginPage(page)
 
     await loginPage.goto()
-    await loginPage.login(testUsers.lockedOut.username, testUsers.lockedOut.password)
+    await loginPage.login(testUsers.invalid.username, testUsers.invalid.password)
 
-    await expect(page).toHaveURL('/')
     await expect(loginPage.errorMessage).toBeVisible()
-    await expect(loginPage.errorMessage).toContainText('locked out')
+    await expect(loginPage.errorMessage).toContainText('do not match')
   })
 })

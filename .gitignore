@@ -4,6 +4,9 @@
 # Dependencies
 node_modules/
 
+# System Under Test — cloned locally / in CI via `npm run app:setup`
+/app/
+
 # macOS
 .DS_Store
 
