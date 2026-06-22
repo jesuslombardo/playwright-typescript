@@ -1124,6 +1124,93 @@ container:
 
 ---
 
+## Step 23 — Build our own System Under Test: `demo-shop-app`
+
+**Status:** Done
+
+**What**
+
+- Built a **separate repository**, [`demo-shop-app`](https://github.com/jesuslombardo/demo-shop-app), as a minimal full-stack app to test against:
+  - **Express 5** API: `/health`, `POST /api/login` (JWT), full `/api/products` CRUD (writes require a Bearer token).
+  - **SQLite** (`better-sqlite3`, in-memory) seeded on boot with the six Sauce Demo products.
+  - **Swagger UI** at `/api/docs` (+ raw spec at `/api/openapi.json`).
+  - **Vanilla HTML/JS UI** (login + product list/create/delete) served statically by Express — no framework, no build step.
+- Its **own CI** (`lint → unit tests → build & publish Docker image to GHCR`).
+- Glibc-slim `Dockerfile` so `better-sqlite3` uses its **prebuilt binary** (no compiler in the image).
+
+**Why**
+
+- Sauce Demo is **frontend-only (no API)**, which made a _real_ testing pyramid impossible. Owning the app means API and E2E tests hit the **same backend and data model**. See [ADR-006](adr/006-custom-sut-and-testing-pyramid.md).
+
+**Commands**
+
+```bash
+npm start          # http://localhost:3000  (Swagger at /api/docs)
+npm test           # node --test (health, auth, CRUD over HTTP)
+docker build -t demo-shop-app . && docker run --rm -p 3000:3000 demo-shop-app
+```
+
+**Files** (in the `demo-shop-app` repo)
+
+- `app.js`, `server.js`, `src/{db,auth,products.router,openapi}.js`
+- `public/{index,products}.html`, `public/js/*`, `public/css/styles.css`
+- `Dockerfile`, `.github/workflows/ci.yml`, `test/api.test.js`
+
+**Learnings**
+
+- A vanilla UI served by Express starts in ~1 s — perfect for an **ephemeral** SUT in CI.
+- `better-sqlite3` ships prebuilt binaries for **glibc** (Debian/Ubuntu), not musl — so use `node:22-bookworm-slim`, not Alpine, to avoid a source build.
+- In-memory SQLite reseeded on every boot = **deterministic** test data with zero fixtures to reset.
+
+---
+
+## Step 24 — API tests + testing pyramid against `demo-shop-app`
+
+**Status:** Done
+
+**What**
+
+- **Migrated the suite off Sauce Demo** onto our own SUT.
+- Added **API tests** (`tests/api/products.api.spec.ts`) using the Playwright **`request` fixture**, tagged `@api`: health, login/JWT, list/get, 404, auth-required, validation, and a full create→read→update→delete round-trip.
+- Rewrote the E2E layer: kept `LoginPage` (same `data-test` convention), added `ProductsPage`; new specs for login, logout, and product create/delete. Removed the Sauce-only cart/checkout/inventory POM + specs (preserved in git history).
+- `playwright.config.ts`: a browserless **`api` project** (`testMatch` api specs) + browser projects that `testIgnore` them; a **`webServer`** that starts the app from `./app` (overridable with `BASE_URL`).
+- Scripts: `test:api` (`--project=api`), `test:smoke` (`--grep @smoke`), `test:regression` (`--grep-invert @api`), and `app:setup` (clone + install the SUT locally).
+- **CI is now the pyramid:** `quality → api → smoke → regression → deploy-report`. Every test job checks out `demo-shop-app` into `./app` and starts it ephemerally. Added **`API tests`** to the branch-protection required checks.
+
+**Why**
+
+- The pyramid runs **cheap/low-level first** (API) and **gates** the slower, more expensive E2E — fail-fast, and now a _genuine_ contract since both layers hit the same app.
+
+**Commands**
+
+```bash
+npm run app:setup        # clone + install demo-shop-app into ./app
+npm run test:api         # API layer (browserless)
+npm run test:smoke       # @smoke E2E
+npm run test:regression  # all E2E (excludes @api)
+```
+
+**The gotcha (key lesson)**
+
+- The CI pipeline depends on a **second repository**. `actions/checkout` can pull a _public_ repo without extra credentials (`repository: jesuslombardo/demo-shop-app`, `path: app`), but the consuming job must then `npm ci` **in `app/`** before the `webServer` can start it.
+- The GHCR image the app publishes is **private** by default; rather than make it public (or wire registry auth) just to use it as a CI `services:` container, we **run the app from source** — fewer moving parts, fully reproducible.
+- Branch protection: **added** `API tests` to the required contexts (didn't rename the others) so the gate is explicit and no PR deadlocks — the Step 22 lesson, applied deliberately this time.
+
+**Files**
+
+- `tests/api/products.api.spec.ts`, `tests/products/products.spec.ts`, `tests/auth/*` (rewritten)
+- `pages/products.page.ts` (new), `pages/login.page.ts` (reused), `fixtures/auth.fixture.ts`
+- `playwright.config.ts`, `config/environments.ts`, `utils/data-generator.ts`, `package.json`
+- `.github/workflows/ci.yml` (pyramid), `.env.example`, `.gitignore`, `eslint.config.mjs`, `.prettierignore`
+
+**Learnings**
+
+- Playwright's `request` fixture does API testing with **no browser** — keep those tests in their own project so they run once, not per browser.
+- `@`-prefixed tokens in `describe`/test titles become **tags** automatically — `--grep`/`--grep-invert` then carve the pyramid layers out of one suite.
+- `webServer` with a `url` health check turns "start the app, wait for it, tear it down" into config, not bash — and `reuseExistingServer: !CI` keeps local runs snappy.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
