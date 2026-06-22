@@ -130,6 +130,11 @@ jobs:
             test-results/
           retention-days: 14
 
+  # Sharding: split the regression suite across N parallel machines, each
+  # running --shard=i/N with the blob reporter; merge-reports then stitches the
+  # shards' blobs into one HTML report. NOTE: with ~15 fast tests this is
+  # DIDACTIC — setup (~36s/job) dwarfs the tests (~21s), so it's slower + costs
+  # ~2x here; it pays off once the suite takes many minutes. See ADR-008.
   regression:
     name: Regression
     needs: smoke
@@ -138,6 +143,10 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.61.0-jammy
       options: --user 1001
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
 
     steps:
       - name: Checkout testing repository
@@ -162,18 +171,45 @@ jobs:
         run: npm ci
         working-directory: app
 
-      - name: Run regression suite (E2E)
-        run: npm run test:regression
+      - name: Run regression shard (E2E)
+        run: npm run test:regression -- --shard=${{ matrix.shard }}/${{ strategy.job-total }} --reporter=blob
 
-      - name: Upload debug bundle on failure
-        if: failure()
+      - name: Upload this shard's blob report
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-debug
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 14
+          name: blob-report-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 1
+
+  merge-reports:
+    name: Merge reports
+    needs: regression
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout testing repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install testing dependencies
+        run: npm ci
+
+      - name: Download blob reports from all shards
+        uses: actions/download-artifact@v7
+        with:
+          path: all-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true
+
+      - name: Merge blobs into a single HTML report
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
 
       - name: Upload report for GitHub Pages
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -183,7 +219,7 @@ jobs:
 
   deploy-report:
     name: Publish report (CD)
-    needs: regression
+    needs: merge-reports
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
