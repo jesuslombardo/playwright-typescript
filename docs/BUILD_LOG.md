@@ -1412,6 +1412,51 @@ expect(validateProduct(product), JSON.stringify(validateProduct.errors)).toBeTru
 
 ---
 
+## Step 30 — Test sharding (`--shard` + `merge-reports`)
+
+**Status:** Done
+
+**What**
+
+- Sharded the `regression` job into a **2-shard matrix** (`--shard=${{ matrix.shard }}/${{ strategy.job-total }}`, `--reporter=blob`); each shard uploads its blob.
+- Added a **`merge-reports`** job: downloads all shard blobs (`download-artifact` + `merge-multiple`) and runs `npx playwright merge-reports --reporter html` → one HTML report → Pages. `deploy-report` now `needs: merge-reports`.
+- Updated branch-protection contexts: `Regression` → `Regression (1)` + `Regression (2)`.
+- Decision + measured trade-offs in **[ADR-008](adr/008-test-sharding.md)**.
+
+**Why**
+
+- The canonical way to cut a long suite's wall-clock: split across N machines (speed via horizontal scaling), then stitch the per-shard reports back into one.
+
+**The numbers (measured, our repo)**
+
+|            | Unsharded | 2 shards + merge  |
+| ---------- | --------- | ----------------- |
+| Wall-clock | ~60s      | **~86s** (slower) |
+| Compute    | ~60s      | **~137s** (~2.3×) |
+
+- At ~15 fast tests, **setup (~36s) ≫ tests (~21s)** → sharding is net-negative here. **Didactic**: shows the pattern; pays off when tests ≫ setup.
+
+**The gotchas / lessons**
+
+- **A matrix renames the check** — `Regression` became `Regression (1)`/`(2)`; required-status contexts must be updated or PRs deadlock (same lesson, on purpose).
+- **`strategy.job-total`** as the shard divisor → change `matrix.shard` and the `/N` follows automatically.
+- **Merging reports**: shards emit `blob-report/report-*.zip`; `download-artifact` with `merge-multiple: true` flattens them into one dir for `merge-reports`.
+- **Too few tests → uneven shards** (measured 51s vs 74s) — balancing needs volume.
+- Verified the whole flow locally first (run shard 1/2 + 2/2, merge) before touching CI.
+
+**Files**
+
+- `.github/workflows/ci.yml` (matrix + merge-reports + deploy needs)
+- `docs/adr/008-test-sharding.md`, branch-protection contexts (via `gh api`)
+
+**Learnings**
+
+- Sharding is a **speed** tool, not coverage — orthogonal to cross-browser.
+- Always pair shards with a **merge** step, or you get N fragmented reports.
+- Measure before adopting: the crossover is **tests ≫ setup**.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
