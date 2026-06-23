@@ -16,6 +16,7 @@ fixtures/     → test setup and dependency injection (Playwright)
 data/         → scenario test data (factories + datasets) — see ADR-014
 utils/        → non-UI helpers (API helpers, formatters)
 config/       → environment URLs and env-backed credentials
+examples/     → OOP pattern gallery (opt-in study layer) — see ADR-018
 app/          → the System Under Test, cloned in (gitignored) — see SUT below
 ```
 
@@ -98,6 +99,20 @@ See [ADR-004](adr/004-components-vs-fixtures.md) for the full decision guide, an
   assert via UI".
 
 See [ADR-014](adr/014-test-data-layer.md) and [`data/README.md`](../data/README.md).
+
+### OOP patterns & principles (study layer)
+
+- An **additive** layer that _demonstrates_ OOP without bloating the suite. It
+  splits in two: **organic** patterns that close real coverage gaps live in
+  `tests/` and run in CI (Template Method, Generics `CrudClient<T>`, Strategy,
+  and a `BasePage` the page objects extend); a **gallery** of patterns the app
+  doesn't need lives under `examples/patterns/` and runs opt-in via
+  `npm run test:patterns`.
+- [docs/patterns/README.md](patterns/README.md) — the catalogue.
+  [docs/oop-principles/README.md](oop-principles/README.md) — each principle
+  mapped to the file that shows it, plus an interview-defense cheat sheet.
+- Guiding rule: **a pattern must earn its place** — see
+  [ADR-018](adr/018-oop-patterns-and-principles-layer.md).
 
 ## Where does this code go?
 
@@ -215,6 +230,7 @@ quality → api → smoke → regression → deploy-report (CD)
 - [ADR-004: Components vs fixtures](adr/004-components-vs-fixtures.md)
 - [ADR-005: Anti-flaky test strategy](adr/005-anti-flaky-test-strategy.md)
 - [ADR-006: Custom SUT + testing pyramid](adr/006-custom-sut-and-testing-pyramid.md)
+- [OOP patterns catalogue](patterns/README.md) · [OOP principles map](oop-principles/README.md) — study layer ([ADR-018](adr/018-oop-patterns-and-principles-layer.md))
 
 ## Evolution
 

@@ -1,12 +1,13 @@
 import { Locator, Page } from '@playwright/test'
 import { Product } from '../data/product.factory'
+import { BasePage } from './base.page'
 
 /**
  * The authenticated catalogue page of demo-shop-app: lists products and lets a
- * logged-in user create and delete them.
+ * logged-in user create and delete them. Extends BasePage for `page` + `goto()`.
  */
-export class ProductsPage {
-  readonly page: Page
+export class ProductsPage extends BasePage {
+  protected readonly path = '/products.html'
   readonly title: Locator
   readonly items: Locator
   readonly logoutButton: Locator
@@ -19,7 +20,7 @@ export class ProductsPage {
   readonly addError: Locator
 
   constructor(page: Page) {
-    this.page = page
+    super(page)
     this.title = page.getByTestId('title')
     this.items = page.getByTestId('inventory-item')
     this.logoutButton = page.getByTestId('logout')
@@ -30,10 +31,6 @@ export class ProductsPage {
     this.newProductDescription = page.getByTestId('new-product-description')
     this.addButton = page.getByTestId('add-product-button')
     this.addError = page.getByTestId('add-error')
-  }
-
-  async goto() {
-    await this.page.goto('/products.html')
   }
 
   /** A single product card located by its (unique) name. */

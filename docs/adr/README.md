@@ -23,6 +23,7 @@ An [Architecture Decision Record](https://adr.github.io/) captures an important 
 | [015](015-mobile-device-emulation.md)                     | Mobile testing — device emulation strategy       | Accepted |
 | [016](016-auth-service-split-microservices-mode.md)       | Microservices mode — extracting auth-service     | Accepted |
 | [017](017-consumer-driven-contract-testing-pact.md)       | Consumer-driven contract testing with Pact       | Accepted |
+| [018](018-oop-patterns-and-principles-layer.md)           | OOP patterns & principles — organic vs gallery   | Accepted |
 
 ## When to add a new ADR
 

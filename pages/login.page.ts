@@ -1,22 +1,20 @@
 import { Locator, Page } from '@playwright/test'
+import { BasePage } from './base.page'
 
-export class LoginPage {
-  readonly page: Page
+/** The login screen of demo-shop-app. Extends BasePage for `page` + `goto()`. */
+export class LoginPage extends BasePage {
+  protected readonly path = '/'
   readonly usernameInput: Locator
   readonly passwordInput: Locator
   readonly loginButton: Locator
   readonly errorMessage: Locator
 
   constructor(page: Page) {
-    this.page = page
+    super(page)
     this.usernameInput = page.getByTestId('username')
     this.passwordInput = page.getByTestId('password')
     this.loginButton = page.getByTestId('login-button')
     this.errorMessage = page.getByTestId('error')
-  }
-
-  async goto() {
-    await this.page.goto('/')
   }
 
   async login(username: string, password: string) {
