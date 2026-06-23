@@ -1767,6 +1767,42 @@ BASE_URL=http://localhost:3000 npm run test:api   # 24 passed
 
 ---
 
+## Step 38 — Data-driven from an external file (CSV)
+
+**Status:** Done
+
+**What**
+
+- Added a **CSV-sourced** data-driven login matrix alongside the TypeScript datasets: `data/login.cases.csv` (the data, spreadsheet-editable) + `data/login.cases.ts` (loads it via **`csv-parse`** into typed cases) + `tests/api/login.csv.api.spec.ts` (one row → one test, `@api`).
+- The CSV rows add **new, security-flavoured edge coverage** (not a duplicate of `auth.dataset.ts`): username/password **case-sensitivity**, **surrounding whitespace** (asserts the app does NOT trim), and **injection-looking** input — all deterministic against the app's exact-match `authenticate`.
+- Added `csv-parse` devDep; ignored `*.csv` in `.prettierignore` (Prettier has no CSV parser). Docs: `data/README.md` (TS vs CSV/JSON section), ROADMAP.
+
+**Why**
+
+- Clarifies a point worth teaching: the datasets were **already complete** in TS form — CSV/JSON is an **alternative source format**, not a missing feature. Same data-driven pattern, different editor: a **non-developer** (manual QA, analyst) can edit a CSV in a spreadsheet — the classic "here's a CSV of cases" hand-off.
+- Demonstrates the trade-off: TS = type-safe + inline code (faker); CSV/JSON = editable by non-coders but static scalars only.
+
+**Commands**
+
+```bash
+npm install -D csv-parse
+npx playwright test tests/api/login.csv.api.spec.ts --project=api   # 8 passed
+```
+
+**Files**
+
+- `data/login.cases.csv`, `data/login.cases.ts`, `tests/api/login.csv.api.spec.ts`
+- `.prettierignore` (`*.csv`), `package.json` (`csv-parse`), `data/README.md`, `docs/ROADMAP.md`
+
+**Learnings**
+
+- **Data-driven ≠ a single format**: TS datasets, CSV, and JSON all drive the same `for…of` loop — choose by **who edits the data**, not by capability.
+- **CSV preserves surrounding whitespace** by default — perfect for asserting the app does not trim; a TS literal would hide that detail.
+- **Prettier can't parse CSV** → add data fixtures to `.prettierignore` or `format:check` (a required CI check) breaks on them.
+- Adding cases via CSV is genuinely **zero-code** for the editor — the loader + spec never change as rows grow.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

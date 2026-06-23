@@ -1,0 +1,9 @@
+label,username,password,expectedStatus,expectToken
+valid credentials,standard_user,secret_sauce,200,true
+wrong password,standard_user,wrong_password,401,false
+unknown user,ghost_user,secret_sauce,401,false
+empty credentials,,,401,false
+username wrong case,Standard_User,secret_sauce,401,false
+password wrong case,standard_user,Secret_Sauce,401,false
+username with surrounding spaces,  standard_user  ,secret_sauce,401,false
+injection-looking input,' OR '1'='1,' OR '1'='1,401,false
