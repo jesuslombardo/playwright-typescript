@@ -9,15 +9,25 @@ const API_SPECS = /.*\.api\.spec\.ts$/
 /** Mobile specs run ONLY on the emulated-device project(s), never on desktop. */
 const MOBILE_SPECS = /.*\.mobile\.spec\.ts$/
 
+/** Pact consumer contract specs — browserless, run in their own `contract` project. */
+const CONTRACT_SPECS = /.*\.pact\.spec\.ts$/
+
 const apiProject = {
   name: 'api',
   testMatch: API_SPECS,
 }
 
+/* Consumer-driven contract tests (Pact). Browserless; they use a Pact mock, not
+ * the SUT, so they need no baseURL — isolated by filename like the `api` project. */
+const contractProject = {
+  name: 'contract',
+  testMatch: CONTRACT_SPECS,
+}
+
 const browserProject = (name: string, device: string) => ({
   name,
   use: { ...devices[device] },
-  testIgnore: [API_SPECS, MOBILE_SPECS],
+  testIgnore: [API_SPECS, MOBILE_SPECS, CONTRACT_SPECS],
 })
 
 /*
@@ -83,7 +93,7 @@ export default defineConfig({
    * browsers → desktop E2E. Local: Chromium only (fast). CI / CROSS_BROWSER: all three.
    * mobile   → emulated-device E2E (iPhone/WebKit + Pixel/Chromium). Runs only *.mobile.spec.ts.
    */
-  projects: [apiProject, ...browserProjects, ...mobileProjects],
+  projects: [apiProject, contractProject, ...browserProjects, ...mobileProjects],
 
   /*
    * Start the System Under Test before tests run.
@@ -91,19 +101,20 @@ export default defineConfig({
    * and in CI it is placed in ./app and started from source here.
    * Set BASE_URL to skip this and point at an already-running instance.
    */
-  webServer: process.env.BASE_URL
-    ? undefined
-    : {
-        command: 'node app/server.js',
-        url: 'http://localhost:3000/health',
-        reuseExistingServer: !process.env.CI,
-        timeout: 60_000,
-        env: {
-          PORT: '3000',
-          DB_PATH: ':memory:',
-          // Forward the JWT signing key to the SUT. In CI it comes from a
-          // GitHub Secret (job env); locally it falls back to the app's default.
-          JWT_SECRET: process.env.JWT_SECRET || 'demo-shop-dev-secret',
+  webServer:
+    process.env.BASE_URL || process.env.NO_WEBSERVER
+      ? undefined
+      : {
+          command: 'node app/server.js',
+          url: 'http://localhost:3000/health',
+          reuseExistingServer: !process.env.CI,
+          timeout: 60_000,
+          env: {
+            PORT: '3000',
+            DB_PATH: ':memory:',
+            // Forward the JWT signing key to the SUT. In CI it comes from a
+            // GitHub Secret (job env); locally it falls back to the app's default.
+            JWT_SECRET: process.env.JWT_SECRET || 'demo-shop-dev-secret',
+          },
         },
-      },
 })

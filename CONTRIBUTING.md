@@ -225,6 +225,23 @@ npm run test:micro              # BASE_URL=http://localhost:3000, api project
 - The same `BASE_URL` makes the **whole suite topology-agnostic** — it runs
   unchanged against monolith or microservices. See [ADR-016](docs/adr/016-auth-service-split-microservices-mode.md).
 
+## Contract testing (Pact)
+
+auth-service is a separate service (microservices mode), so `shop-web` (the login
+client) and auth have a **consumer-driven contract**, verified with Pact.
+
+- **Consumer** (this repo): `npm run test:contract` runs `utils/auth-client.ts`
+  against a Pact mock and writes `pacts/shop-web-auth-service.json` — commit it.
+- **Provider** (`demo-shop-app`): its CI checks this repo out and verifies auth
+  satisfies that pact; if auth's login response drifts, **its build fails**.
+- **Merge order reverses here:** the consumer owns the contract, so merge the
+  **consumer (this repo) first**, then the provider — the opposite of the
+  app-code "merge app first" rule. See
+  [ADR-017](docs/adr/017-consumer-driven-contract-testing-pact.md).
+
+Consumer-DRIVEN — distinct from the schema-based contract tests
+(`tests/api/contract.api.spec.ts`, Ajv vs OpenAPI) which only check response shape.
+
 ## Conventions
 
 - **Language:** all code, comments, commit messages and docs are written in
