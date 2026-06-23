@@ -14,6 +14,7 @@ See [ADR-006](docs/adr/006-custom-sut-and-testing-pyramid.md) for why it's split
 ```bash
 nvm use                 # Node 22 (see .nvmrc)
 npm ci                  # framework dependencies
+npx playwright install chromium webkit   # chromium (desktop + Pixel), webkit (iPhone mobile)
 npm run app:setup       # clone + install the SUT into ./app (gitignored)
 ```
 
@@ -28,6 +29,11 @@ npm run test:regression  # full E2E (excludes @api)
 npm test                 # everything (api + e2e)
 npm run test:cross-browser   # all three browsers locally
 ```
+
+`npm test` and `npm run test:regression` also run the **mobile** projects —
+`mobile-safari` (iPhone 13 / WebKit) and `mobile-chrome` (Pixel 7 / Chromium);
+see [ADR-015](docs/adr/015-mobile-device-emulation.md). WebKit must be installed
+(see Local setup) for `mobile-safari` to run.
 
 Playwright's `webServer` starts the app from `./app` automatically. To target an
 already-running instance instead, set `BASE_URL` (this skips `webServer`):
