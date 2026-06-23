@@ -131,7 +131,7 @@ smoke-tested again. Live: [staging](https://demo-shop-app-staging.onrender.com) 
 - [x] Visual regression — one stable login-page baseline, generated in CI's image (Step 33, ADR-011)
 - [x] **CD: staging → production promotion** with a manual approval gate (GitHub Environments) (Step 34, ADR-012)
 - [x] **Cross-repo version pinning** — test against a fixed app tag (`.app-version`), not `@main` (Step 35, ADR-013)
-- [x] **Mobile mini-suite** — iPhone 13/WebKit emulation: hamburger + 1-column layout, isolated like `api` (Step 39, ADR-015)
+- [x] **Mobile mini-suite** — iPhone 13 (WebKit) + Pixel 7 (Chromium) emulation: hamburger + 1-column layout, isolated like `api` (Step 39 + 41, ADR-015)
 
 **Phase 3 — Quality & Reporting** (core complete)
 

@@ -7,17 +7,18 @@ import { testUsers } from '../../config/environments'
  * Mobile mini-suite — a small, deliberate set (mobile isn't the framework's
  * focus, but we cover the basics).
  *
- * NOTE: "mobile" here is Playwright DEVICE EMULATION, not a real phone. The
- * `mobile-safari` project (see playwright.config.ts) emulates an iPhone 13:
- * WebKit engine ≈ iOS Safari, a 390px viewport, touch enabled and a mobile
- * user-agent. It does NOT test real iOS Safari, native apps, or real hardware —
- * that needs a device cloud / Appium and a separate stack.
+ * NOTE: "mobile" here is Playwright DEVICE EMULATION, not a real phone. These
+ * specs run on two projects (see playwright.config.ts): `mobile-safari` (iPhone
+ * 13 → WebKit ≈ iOS Safari) and `mobile-chrome` (Pixel 7 → Chromium ≈ Android
+ * Chrome) — each sets a narrow viewport, touch and a mobile user-agent. It does
+ * NOT test real iOS/Android, native apps, or real hardware — that needs a device
+ * cloud / Appium and a separate stack.
  *
  * These specs assert behaviour that only shows up on a narrow, touch screen, so
  * they live in their own *.mobile.spec.ts files and run ONLY on the mobile
  * project (the desktop projects testIgnore them).
  */
-test.describe('Mobile — responsive products page (iPhone 13 / WebKit)', () => {
+test.describe('Mobile — responsive products page', () => {
   test.beforeEach(async ({ page }) => {
     const loginPage = new LoginPage(page)
     await loginPage.goto()

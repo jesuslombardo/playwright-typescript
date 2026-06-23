@@ -1876,6 +1876,36 @@ npm run test:api                                                          # 38 p
 
 ---
 
+## Step 41 — Mobile: add Pixel 7 (Android / Chromium)
+
+**Status:** Done
+
+**What**
+
+- Added a **second mobile device** to the `mobileProjects` array: `mobile-chrome` = `devices['Pixel 7']` (**Chromium ≈ Android Chrome**), alongside `mobile-safari` (iPhone 13 / WebKit). The same 3 `*.mobile.spec.ts` specs now run on **both** mobile engines (6 mobile tests). Made the spec's `describe` title + header device-agnostic (the project name already names the device).
+
+**Why**
+
+- Step 39 shipped iPhone-only, but the intent was to cover **both** real mobile engines. Pixel 7 adds **Android Chrome** — the other half — for one line, since the suite is tiny and the isolation pattern already supports N devices. iOS Safari (WebKit) + Android Chrome (Chromium) is the standard "cover the basics" mobile pair.
+
+**Commands**
+
+```bash
+npx playwright test --project=mobile-safari --project=mobile-chrome   # 6 passed
+```
+
+**Files**
+
+- `playwright.config.ts` (Pixel 7 in `mobileProjects` + comments), `tests/mobile/responsive.mobile.spec.ts` (device-agnostic title/header)
+- `docs/adr/015-mobile-device-emulation.md` (two devices), `docs/ROADMAP.md`, `README.md`
+
+**Learnings**
+
+- **The isolation pattern scales by a line** — adding a device is one `mobileProject(...)` entry; the same specs fan out across devices with no new test code (the project name disambiguates in the report).
+- **iPhone→WebKit, Pixel→Chromium** — the device descriptor carries the engine (`defaultBrowserType`), so picking the device picks the mobile browser; Pixel reuses the Chromium already installed for desktop, so no extra browser download.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
