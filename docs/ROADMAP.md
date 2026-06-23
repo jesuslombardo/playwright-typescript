@@ -118,18 +118,18 @@ Next **large** phase.
 
 Built out the `data/` layer once inline literals + `config/` were no longer enough.
 
-| Item                        | Purpose                                            | Status |
-| --------------------------- | -------------------------------------------------- | ------ |
-| `data/` folder              | Home for scenario data, separate from `config/`    | ✅     |
-| Separation from `config/`   | Config = env/URLs; data = scenarios                | ✅     |
-| Factory (`buildProduct`)    | Unique, faker-based synthetic data with overrides  | ✅     |
-| Datasets (data-driven)      | Create + login cases — one row = one test          | ✅     |
-| Lifecycle fixture           | `apiProduct` seeds via API + auto-cleans up        | ✅     |
-| External-file dataset (CSV) | CSV-sourced login matrix via `csv-parse` (Step 38) | ✅     |
+| Item                         | Purpose                                            | Status |
+| ---------------------------- | -------------------------------------------------- | ------ |
+| `data/` folder               | Home for scenario data, separate from `config/`    | ✅     |
+| Separation from `config/`    | Config = env/URLs; data = scenarios                | ✅     |
+| Factory (`buildProduct`)     | Unique, faker-based synthetic data with overrides  | ✅     |
+| Datasets (data-driven)       | Create + login cases — one row = one test          | ✅     |
+| Lifecycle fixture            | `apiProduct` seeds via API + auto-cleans up        | ✅     |
+| External-file dataset (CSV)  | CSV-sourced login matrix via `csv-parse` (Step 38) | ✅     |
+| External-file dataset (JSON) | JSON-sourced PUT/update matrix, zero-dep (Step 40) | ✅     |
 
-**Possible next (NTH):** JSON dataset (the zero-dep sibling of CSV —
-`resolveJsonModule` is already on), more entities/factories, a faker seed for
-reproducible random data, or larger-volume data generation for perf tests.
+**Possible next (NTH):** more entities/factories, a faker seed for reproducible
+random data, or larger-volume data generation for perf tests.
 
 ---
 

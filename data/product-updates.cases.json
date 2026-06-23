@@ -1,0 +1,16 @@
+[
+  { "label": "update price", "patch": { "price": 99.99 }, "expectedStatus": 200 },
+  { "label": "update name", "patch": { "name": "Renamed Widget" }, "expectedStatus": 200 },
+  {
+    "label": "partial update (description only)",
+    "patch": { "description": "new desc" },
+    "expectedStatus": 200
+  },
+  {
+    "label": "null price keeps the existing value",
+    "patch": { "price": null },
+    "expectedStatus": 200
+  },
+  { "label": "price as a string", "patch": { "price": "free" }, "expectedStatus": 400 },
+  { "label": "empty name", "patch": { "name": "" }, "expectedStatus": 400 }
+]
