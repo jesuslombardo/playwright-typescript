@@ -29,7 +29,7 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
 🟡 Phase 3   Hooks ✅ (Husky) + anti-flaky ✅ (ADR-005) · reporting 💤 NTH
 ⬜ data/     Structured test data layer
-🟡 Phase 5   Docker ✅ · tags ✅ · pyramid ✅ · sharding ✅ · matrix ✅ · CD deploy ✅ · visual ✅
+🟡 Phase 5   Docker ✅ · tags ✅ · pyramid ✅ · sharding ✅ · matrix ✅ · CD deploy ✅ · visual ✅ · staging→prod gate ✅
 ```
 
 ---
@@ -127,20 +127,21 @@ Introduce when static config in `config/` is not enough.
 
 ## Phase 5 — Hardening (when the framework grows)
 
-| Item                             | Purpose                                                                           | Status        |
-| -------------------------------- | --------------------------------------------------------------------------------- | ------------- |
-| **Playwright Docker image**      | Fixed slow CI — preinstalled browsers + OS deps (Step 21)                         | ✅            |
-| **Tags (`@smoke`)**              | Smoke → regression staging in CI (Step 22)                                        | ✅            |
-| **API tests + testing pyramid**  | API tests gate E2E in CI (pyramid: API → smoke → regression)                      | ✅ (Step 24)  |
-| **Cross-repo integration check** | App PRs run API + smoke vs the PR app — required gate (Step 25)                   | ✅            |
-| **Execution cadence**            | Fast PR gate (API+smoke) + nightly cross-browser regression (Step 26, ADR-007)    | ✅            |
-| **App test tiers**               | demo-shop-app unit → integration mini-pyramid in its own CI (Step 27)             | ✅            |
-| Sharding                         | Split regression across parallel shards + merge-reports (Step 30, ADR-008)        | ✅ (didactic) |
-| Matrix                           | `api` job over Node `[22, 24]` — compatibility matrix (Step 31, ADR-009)          | ✅ (didactic) |
-| **CD: deploy to environment**    | App deployed to Render + post-deploy smoke vs live URL (Step 32, ADR-010)         | ✅            |
-| `CONTRIBUTING.md`                | Two-repo flow + onboarding (Step 25)                                              | ✅            |
-| **Visual regression**            | One stable baseline of the login page, generated in CI's image (Step 33, ADR-011) | ✅            |
-| More domains                     | More E2E flows, more visual coverage, etc.                                        | ⬜            |
+| Item                             | Purpose                                                                             | Status        |
+| -------------------------------- | ----------------------------------------------------------------------------------- | ------------- |
+| **Playwright Docker image**      | Fixed slow CI — preinstalled browsers + OS deps (Step 21)                           | ✅            |
+| **Tags (`@smoke`)**              | Smoke → regression staging in CI (Step 22)                                          | ✅            |
+| **API tests + testing pyramid**  | API tests gate E2E in CI (pyramid: API → smoke → regression)                        | ✅ (Step 24)  |
+| **Cross-repo integration check** | App PRs run API + smoke vs the PR app — required gate (Step 25)                     | ✅            |
+| **Execution cadence**            | Fast PR gate (API+smoke) + nightly cross-browser regression (Step 26, ADR-007)      | ✅            |
+| **App test tiers**               | demo-shop-app unit → integration mini-pyramid in its own CI (Step 27)               | ✅            |
+| Sharding                         | Split regression across parallel shards + merge-reports (Step 30, ADR-008)          | ✅ (didactic) |
+| Matrix                           | `api` job over Node `[22, 24]` — compatibility matrix (Step 31, ADR-009)            | ✅ (didactic) |
+| **CD: deploy to environment**    | App deployed to Render + post-deploy smoke vs live URL (Step 32, ADR-010)           | ✅            |
+| **CD: staging → prod + gate**    | Promote same commit through staging → prod, manual approval gate (Step 34, ADR-012) | ✅            |
+| `CONTRIBUTING.md`                | Two-repo flow + onboarding (Step 25)                                                | ✅            |
+| **Visual regression**            | One stable baseline of the login page, generated in CI's image (Step 33, ADR-011)   | ✅            |
+| More domains                     | More E2E flows, more visual coverage, etc.                                          | ⬜            |
 
 **Note — API tests + testing pyramid (DONE, Step 24):**
 
@@ -193,33 +194,34 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 
 ## Map: where to find each concept in the repo
 
-| Concept                        | Where                                                      |
-| ------------------------------ | ---------------------------------------------------------- |
-| Page Object Model              | `pages/`, ADR-001                                          |
-| Components vs fixtures         | `components/`, `fixtures/`, ADR-004                        |
-| Browser strategy (local vs CI) | `playwright.config.ts`, ADR-002                            |
-| Code style                     | ESLint/Prettier, ADR-003                                   |
-| CI pipeline                    | `.github/workflows/ci.yml`                                 |
-| CD (GitHub Pages)              | job `deploy-report` in `ci.yml`                            |
-| Secrets pattern                | `config/environments.ts`, workflow `env:`                  |
-| Local secrets (`.env`)         | `.env.example`, `playwright.config.ts` (dotenv)            |
-| CI run time (Docker fix)       | BUILD_LOG Step 16, Phase 5 (cache tried+reverted)          |
-| Pre-commit hook (Husky)        | `.husky/pre-commit`, `package.json` lint-staged            |
-| Node version pinning           | `.nvmrc`, `package.json` engines                           |
-| Anti-flaky strategy            | ADR-005, `playwright.config.ts` (retries/traces)           |
-| API tests (`request` fixture)  | `tests/api/`, `api` project, BUILD_LOG Step 24             |
-| Contract testing (schema)      | `tests/api/contract.api.spec.ts` + OpenAPI, Step 29        |
-| Sharding + merge-reports       | `.github/workflows/ci.yml` matrix, ADR-008, Step 30        |
-| Compatibility matrix (Node)    | `api` job `matrix.node`, ADR-009, Step 31                  |
-| CD deploy + post-deploy smoke  | `demo-shop-app` `render.yaml` + `ci.yml`, ADR-010, Step 32 |
-| Visual regression              | `tests/visual/`, ADR-011, Step 33                          |
-| Testing pyramid (API → E2E)    | `.github/workflows/ci.yml`, ADR-006                        |
-| System Under Test (own app)    | `demo-shop-app` repo, ADR-006, BUILD_LOG Step 23           |
-| Ephemeral SUT (`webServer`)    | `playwright.config.ts`, `app:setup` script                 |
-| Cross-repo integration gate    | `demo-shop-app/.github/workflows/e2e.yml`, Step 25         |
-| Execution cadence (PR/nightly) | ADR-007, `.github/workflows/nightly.yml`, Step 26          |
-| App test tiers (unit/integ.)   | `demo-shop-app` test/unit + test/integration, Step 27      |
-| Two-repo contributor flow      | `CONTRIBUTING.md`                                          |
-| Branch protection / PR gate    | GitHub branch rules, BUILD_LOG Steps 20, 25                |
-| Build history                  | `docs/BUILD_LOG.md` Steps 1–30                             |
-| This plan                      | `docs/ROADMAP.md`                                          |
+| Concept                        | Where                                                            |
+| ------------------------------ | ---------------------------------------------------------------- |
+| Page Object Model              | `pages/`, ADR-001                                                |
+| Components vs fixtures         | `components/`, `fixtures/`, ADR-004                              |
+| Browser strategy (local vs CI) | `playwright.config.ts`, ADR-002                                  |
+| Code style                     | ESLint/Prettier, ADR-003                                         |
+| CI pipeline                    | `.github/workflows/ci.yml`                                       |
+| CD (GitHub Pages)              | job `deploy-report` in `ci.yml`                                  |
+| Secrets pattern                | `config/environments.ts`, workflow `env:`                        |
+| Local secrets (`.env`)         | `.env.example`, `playwright.config.ts` (dotenv)                  |
+| CI run time (Docker fix)       | BUILD_LOG Step 16, Phase 5 (cache tried+reverted)                |
+| Pre-commit hook (Husky)        | `.husky/pre-commit`, `package.json` lint-staged                  |
+| Node version pinning           | `.nvmrc`, `package.json` engines                                 |
+| Anti-flaky strategy            | ADR-005, `playwright.config.ts` (retries/traces)                 |
+| API tests (`request` fixture)  | `tests/api/`, `api` project, BUILD_LOG Step 24                   |
+| Contract testing (schema)      | `tests/api/contract.api.spec.ts` + OpenAPI, Step 29              |
+| Sharding + merge-reports       | `.github/workflows/ci.yml` matrix, ADR-008, Step 30              |
+| Compatibility matrix (Node)    | `api` job `matrix.node`, ADR-009, Step 31                        |
+| CD deploy + post-deploy smoke  | `demo-shop-app` `render.yaml` + `ci.yml`, ADR-010, Step 32       |
+| Staging→prod + approval gate   | `demo-shop-app` `ci.yml` + GitHub Environments, ADR-012, Step 34 |
+| Visual regression              | `tests/visual/`, ADR-011, Step 33                                |
+| Testing pyramid (API → E2E)    | `.github/workflows/ci.yml`, ADR-006                              |
+| System Under Test (own app)    | `demo-shop-app` repo, ADR-006, BUILD_LOG Step 23                 |
+| Ephemeral SUT (`webServer`)    | `playwright.config.ts`, `app:setup` script                       |
+| Cross-repo integration gate    | `demo-shop-app/.github/workflows/e2e.yml`, Step 25               |
+| Execution cadence (PR/nightly) | ADR-007, `.github/workflows/nightly.yml`, Step 26                |
+| App test tiers (unit/integ.)   | `demo-shop-app` test/unit + test/integration, Step 27            |
+| Two-repo contributor flow      | `CONTRIBUTING.md`                                                |
+| Branch protection / PR gate    | GitHub branch rules, BUILD_LOG Steps 20, 25                      |
+| Build history                  | `docs/BUILD_LOG.md` Steps 1–30                                   |
+| This plan                      | `docs/ROADMAP.md`                                                |
