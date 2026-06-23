@@ -153,7 +153,7 @@ random data, or larger-volume data generation for perf tests.
 | **Visual regression**               | One stable baseline of the login page, generated in CI's image (Step 33, ADR-011)                                            | ✅            |
 | **Mobile mini-suite**               | iPhone 13 (WebKit) + Pixel 7 (Chromium) emulation — hamburger + 1-column layout, isolated like `api` (Step 39 + 41, ADR-015) | ✅            |
 | **Microservices mode (auth split)** | Optional/additive: extract `auth-service` + gateway; same suite runs against both topologies (Step 42, ADR-016)              | ✅ (didactic) |
-| Contract testing (Pact)             | Consumer-driven contract: products→auth, build-breaking on drift — the marquee skill of the microservices module             | ⬜ (next)     |
+| **Contract testing (Pact)**         | Consumer-driven: `shop-web`→auth, build-breaking on drift — the marquee microservices skill (Step 43, ADR-017)               | ✅ (didactic) |
 | More domains                        | More E2E flows, more visual coverage, etc.                                                                                   | ⬜            |
 
 **Note — API tests + testing pyramid (DONE, Step 24):**

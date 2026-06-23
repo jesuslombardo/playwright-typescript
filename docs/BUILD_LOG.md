@@ -1948,6 +1948,52 @@ BASE_URL=http://localhost:3000 npm run test:api    # 38 passed
 
 ---
 
+## Step 43 — Consumer-driven contract testing with Pact (auth-service)
+
+**Status:** Done
+
+**What**
+
+- **Consumer** (this repo): `utils/auth-client.ts` (the real login client) + `tests/contract/auth.consumer.pact.spec.ts` — a Pact test that runs the client against a Pact mock and generates `pacts/shop-web-auth-service.json` (valid login → 200 `{token, username}`; invalid → 401 `{error}`). New browserless **`contract`** Playwright project (isolated by `*.pact.spec.ts`; `NO_WEBSERVER` skips the SUT). New `test:contract` script + devDep `@pact-foundation/pact`.
+- **Provider** (demo-shop-app): `contract/auth.provider.pact.js` boots the auth slice and verifies the pact (`PACT_DIR` points at the consumer repo's `pacts/`). New `test:contract` script + devDep `@pact-foundation/pact`.
+- **CI** (both, additive / NOT required): `Contract (Pact consumer)` here regenerates the pact; `Contract (Pact provider verification)` in the app checks this repo out for the pact and verifies auth.
+
+**Why**
+
+- The marquee skill of the microservices module. Schema-based contract tests (Step 29) check the provider's own OpenAPI spec; **consumer-driven** Pact captures what `shop-web` actually needs from auth and **breaks the provider's build** on drift. Made real by the auth split (Step 42 / ADR-016). See [ADR-017](adr/017-consumer-driven-contract-testing-pact.md).
+
+**Commands**
+
+\`\`\`bash
+
+# consumer — this repo (no SUT)
+
+npm run test:contract # 1 passed; writes pacts/shop-web-auth-service.json
+
+# provider — demo-shop-app
+
+PACT_DIR="/path/to/playwright-typescript/pacts" npm run test:contract # Verification successful
+
+# drift proof (in the app): token -> accessToken
+
+# -> FAILED: "Actual map is missing the following keys: token" (exit 1)
+
+\`\`\`
+
+**Files**
+
+- This repo: `utils/auth-client.ts`, `tests/contract/auth.consumer.pact.spec.ts`, `pacts/shop-web-auth-service.json`, `playwright.config.ts` (contract project + NO_WEBSERVER), `package.json`, `.github/workflows/ci.yml`, `docs/adr/017-consumer-driven-contract-testing-pact.md`, `docs/ROADMAP.md`, `CONTRIBUTING.md`.
+- App repo: `contract/auth.provider.pact.js`, `package.json`, `.github/workflows/ci.yml`, `README.md`.
+
+**Learnings**
+
+- **Consumer-driven ≠ schema-based.** Step 29 asks "does the response match the spec?"; Pact asks "can the provider satisfy what THIS consumer needs?" — and a mismatch breaks the **provider's** build, not the consumer's test.
+- **The contract is owned by the consumer.** The pact is committed here; the provider checks it out — so the **merge order reverses** (consumer first, then provider verifies — opposite of "merge app first").
+- **Verified the guarantee, didn't just assert it** — renaming `token`→`accessToken` in auth made provider verification FAIL, proving drift is caught.
+- **No broker needed for the course** — a committed pact + cross-repo checkout is a working file-based "broker"; a hosted broker / PactFlow is the production upgrade.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

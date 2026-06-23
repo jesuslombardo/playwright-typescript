@@ -22,6 +22,7 @@ An [Architecture Decision Record](https://adr.github.io/) captures an important 
 | [014](014-test-data-layer.md)                             | Test data layer — factories, datasets, lifecycle | Accepted |
 | [015](015-mobile-device-emulation.md)                     | Mobile testing — device emulation strategy       | Accepted |
 | [016](016-auth-service-split-microservices-mode.md)       | Microservices mode — extracting auth-service     | Accepted |
+| [017](017-consumer-driven-contract-testing-pact.md)       | Consumer-driven contract testing with Pact       | Accepted |
 
 ## When to add a new ADR
 
