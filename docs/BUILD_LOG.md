@@ -1803,6 +1803,45 @@ npx playwright test tests/api/login.csv.api.spec.ts --project=api   # 8 passed
 
 ---
 
+## Step 39 — Mobile mini-suite (device emulation)
+
+**Status:** Done
+
+**What**
+
+- Added a small **mobile** project + suite emulating an **iPhone 13 (WebKit ≈ iOS Safari)** — `mobile-safari` in `playwright.config.ts`. Isolated by filename **like `api`**: specs are `*.mobile.spec.ts` (`testMatch: MOBILE_SPECS`), and the desktop projects `testIgnore` them. `tests/mobile/responsive.mobile.spec.ts` asserts the **hamburger** (Logout hidden until a real `tap()` reveals it) and the **add-form + product grid** each collapsing to **one column**.
+- This required a real **cross-repo feature loop**: the SUT had no responsive behaviour, so `demo-shop-app` gained a responsive layout (hamburger menu + stacked form), released as **v1.1.0** (PR #9 → CI green → merge → tag). Then bumped `.app-version` **v1.0.0 → v1.1.0** so the suite runs against it. POM extended with `menuToggle`/`topbarNav` + `openMobileMenu()`. Decision + trade-offs in **[ADR-015](adr/015-mobile-device-emulation.md)**.
+
+**Why**
+
+- Mobile isn't the framework's focus, but the SUT is a web app and **responsive** matters; basic touch/viewport coverage is ~free as **one more Playwright project**. A separate repo is only worth it for **real-device / native** testing (Appium / a device cloud) — which emulation explicitly is **not**.
+- Exercises the version-pinning loop end-to-end for a **feature** change (not just a CI tweak): feature in the app repo → release → bump the pin → test — the real SDET-vs-product-team workflow.
+
+**Commands**
+
+```bash
+# demo-shop-app: feat branch → PR #9 → CI green → squash-merge → tag v1.1.0
+npx playwright install webkit                  # mobile-safari runs on WebKit
+npm run app:setup                              # pull the app at the pinned v1.1.0
+npx playwright test --project=mobile-safari    # 3 passed
+npx playwright test                            # 42 passed (api + chromium + mobile-safari)
+```
+
+**Files**
+
+- `tests/mobile/responsive.mobile.spec.ts` (new); `playwright.config.ts` (`MOBILE_SPECS` + `mobile-safari` project + desktop `testIgnore`); `pages/products.page.ts` (`menuToggle`/`topbarNav`/`openMobileMenu`); `.app-version` (`v1.1.0`)
+- `docs/adr/015-mobile-device-emulation.md`, `docs/adr/README.md`, `docs/ROADMAP.md`, `README.md`
+- App side (`demo-shop-app` **v1.1.0**): `public/products.html`, `public/css/styles.css`, `public/js/products.js`, `package.json`, `CHANGELOG.md`
+
+**Learnings**
+
+- **"Mobile" in Playwright is emulation** — viewport + touch + user-agent on a desktop engine (iPhone→WebKit, Android→Chromium), not real iOS Safari or a native app. Right tool for responsive/touch; wrong tool for real-device rendering/perf bugs.
+- **Same isolation as `api`** — a filename regex with `testMatch`/`testIgnore` keeps mobile-only assertions (1-column layout) off desktop runs and vice versa; no new mechanism to learn.
+- **A real cross-repo loop for a feature** — to test "responsive" we first had to _make_ the app responsive in its own repo, release it, and bump the pin. Feature → version → pin is the actual workflow, not a shortcut through the test repo.
+- **WebKit must be installed locally** for the mobile project even though desktop-local is Chromium-only (ADR-002) — `npx playwright install webkit`; CI already ships it via the Playwright container.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

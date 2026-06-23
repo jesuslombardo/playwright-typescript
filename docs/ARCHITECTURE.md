@@ -26,7 +26,9 @@ playwright-typescript/
 ├── tests/                  # Test specs — scenarios only
 │   ├── api/                # API layer (request fixture, @api) — pyramid base
 │   ├── auth/               # login, logout (E2E)
-│   └── products/           # product list, create/delete (E2E)
+│   ├── products/           # product list, create/delete (E2E)
+│   ├── visual/             # visual regression baseline (E2E, @visual)
+│   └── mobile/             # responsive/touch on an emulated device (*.mobile.spec.ts)
 ├── pages/                  # Page Objects — one class per screen
 │   ├── login.page.ts
 │   └── products.page.ts

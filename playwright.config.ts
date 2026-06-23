@@ -6,6 +6,9 @@ import { environments } from './config/environments'
 /** API specs are browserless (`request` fixture) — kept in their own project. */
 const API_SPECS = /.*\.api\.spec\.ts$/
 
+/** Mobile specs run ONLY on the emulated-device project(s), never on desktop. */
+const MOBILE_SPECS = /.*\.mobile\.spec\.ts$/
+
 const apiProject = {
   name: 'api',
   testMatch: API_SPECS,
@@ -14,7 +17,19 @@ const apiProject = {
 const browserProject = (name: string, device: string) => ({
   name,
   use: { ...devices[device] },
-  testIgnore: API_SPECS,
+  testIgnore: [API_SPECS, MOBILE_SPECS],
+})
+
+/*
+ * Mobile = device emulation (viewport + touch + user-agent), not a real phone.
+ * An "iPhone" device runs on WebKit (≈ iOS Safari); an "Android" one on Chromium.
+ * This project runs ONLY the *.mobile.spec.ts suite — small on purpose: mobile
+ * isn't the focus, but we cover the responsive/touch basics desktop can't.
+ */
+const mobileProject = (name: string, device: string) => ({
+  name,
+  use: { ...devices[device] },
+  testMatch: MOBILE_SPECS,
 })
 
 const crossBrowserProjects = [
@@ -27,6 +42,9 @@ const browserProjects =
   process.env.CI || process.env.CROSS_BROWSER
     ? crossBrowserProjects
     : [browserProject('chromium', 'Desktop Chrome')]
+
+/* Always on (it's tiny). Add e.g. mobileProject('mobile-chrome', 'Pixel 7'). */
+const mobileProjects = [mobileProject('mobile-safari', 'iPhone 13')]
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -58,10 +76,11 @@ export default defineConfig({
   },
 
   /*
-   * api    → browserless request-fixture tests (the pyramid's base).
-   * browsers → E2E. Local: Chromium only (fast). CI / CROSS_BROWSER: all three.
+   * api      → browserless request-fixture tests (the pyramid's base).
+   * browsers → desktop E2E. Local: Chromium only (fast). CI / CROSS_BROWSER: all three.
+   * mobile   → emulated-device E2E (iPhone/WebKit). Runs only *.mobile.spec.ts.
    */
-  projects: [apiProject, ...browserProjects],
+  projects: [apiProject, ...browserProjects, ...mobileProjects],
 
   /*
    * Start the System Under Test before tests run.
