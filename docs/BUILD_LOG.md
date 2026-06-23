@@ -1503,6 +1503,59 @@ gh api ...required_status_checks  # swap API tests -> API tests (22)/(24)
 
 ---
 
+## Step 32 — Continuous Deployment: deploy to a live environment + post-deploy smoke
+
+**Status:** Done
+
+**What**
+
+- Deployed **demo-shop-app to a live environment** (Render, free, native Node) and **closed the loop**: `test → build → deploy → verify`.
+- Added two **push-to-main-only** jobs to the **app's** CI:
+  - `deploy` — `curl`s a **Render Deploy Hook** (gated by `integration` + `publish-image`).
+  - `post-deploy-smoke` — waits for the live instance to serve the deployed commit, then runs a **chromium-only `@smoke`** from this repo against the **live URL** (`BASE_URL`).
+- `render.yaml` = Render **Blueprint** (IaC), `autoDeploy: false` (CI owns deploy timing).
+- `/health` now echoes `RENDER_GIT_COMMIT` → the smoke **waits for the new version** before testing (no race vs the old one).
+- Decision + trade-offs in **[ADR-010](adr/010-deploy-to-environment-and-post-deploy-smoke.md)**.
+
+**Why**
+
+- The pipeline could test + publish artifacts (Pages report, GHCR image) but **never deployed the app**. The app only ran **ephemerally in CI** — nothing proved it runs **deployed** (real host/env/secrets).
+- **Ephemeral vs live is a layering, not a choice:** the pyramid runs **pre-merge against ephemeral** to test the **code**; a thin smoke runs **post-deploy against the live URL** to test the **deploy**. The industry does **both**.
+
+**Ephemeral vs post-deploy (the distinction)**
+
+|              | Ephemeral (pyramid)        | Post-deploy smoke         |
+| ------------ | -------------------------- | ------------------------- |
+| **When**     | every PR, pre-merge        | after deploying to a host |
+| **Proves**   | the **code** works         | the **deploy** works      |
+| **How much** | full suite (API+E2E)       | thin smoke, critical path |
+| **Against**  | a fresh ephemeral instance | the live URL (`BASE_URL`) |
+
+**Commands**
+
+```bash
+# manual one-time setup (the pipeline can't): Render service + the two below
+gh variable set RENDER_APP_URL --repo .../demo-shop-app --body "https://...onrender.com"
+gh secret   set RENDER_DEPLOY_HOOK_URL --repo .../demo-shop-app --body "<deploy hook url>"
+# then on green main: deploy job curls the hook; post-deploy-smoke verifies live
+curl -fsS https://demo-shop-app-mlkv.onrender.com/health
+# -> {"status":"ok","commit":"f5ed074..."}  (matches the deployed SHA)
+```
+
+**Files**
+
+- `demo-shop-app`: `render.yaml`, `.github/workflows/ci.yml` (deploy + post-deploy-smoke), `/health` (commit echo)
+- this repo: `docs/adr/010-...md`, README, ROADMAP, CONTRIBUTING
+
+**Learnings**
+
+- **Deploy ≠ publish.** We already had CD of _artifacts_ (report, image); this adds CD of the _app to an environment_ — the piece people mean by "deploy pipeline".
+- A **post-deploy smoke** is the only stage that catches a green build that still breaks in prod (bad env var, host down). Keep it **thin** (one browser, critical path), never the full regression.
+- **Version-gate the verification** (`/health` → commit) so you test the version you shipped, not the one being swapped out.
+- The deploy can't be fully autonomous: account + deploy-hook are **manual one-time** setup. Wire everything else and document the manual bits.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

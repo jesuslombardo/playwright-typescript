@@ -96,12 +96,13 @@ breaks the critical paths.
 The full cross-browser regression is **not** run on every PR — it's scheduled.
 See [ADR-007](docs/adr/007-test-execution-cadence.md).
 
-| Trigger                                | What runs                                               |
-| -------------------------------------- | ------------------------------------------------------- |
-| **App PR**                             | API + `@smoke` (fast gate)                              |
-| **This repo's PR**                     | Full pyramid (API → smoke → regression)                 |
-| **Push to `main`** (this repo)         | Full pyramid + CD (report → Pages)                      |
-| **Nightly** (`nightly.yml`, 06:00 UTC) | API + full **cross-browser** regression vs. app `@main` |
+| Trigger                                | What runs                                                |
+| -------------------------------------- | -------------------------------------------------------- |
+| **App PR**                             | API + `@smoke` (fast gate)                               |
+| **This repo's PR**                     | Full pyramid (API → smoke → regression)                  |
+| **Push to `main`** (this repo)         | Full pyramid + CD (report → Pages)                       |
+| **Push to `main`** (app repo)          | App CI + **deploy to Render** + post-deploy smoke (live) |
+| **Nightly** (`nightly.yml`, 06:00 UTC) | API + full **cross-browser** regression vs. app `@main`  |
 
 Run the nightly on demand from the Actions tab (**Run workflow**) or:
 
@@ -123,6 +124,25 @@ Config uses `process.env.X || default`, so the same code works with or without s
 `env:` can be scoped at **job** level (only where needed) or **workflow** level
 (shared by all jobs) — see `ci.yml` / `nightly.yml`. To prove a secret is wired
 without leaking it: `echo "X provided -> ${X:+yes}"` (GitHub also masks secret values in logs).
+
+## Deployment (CD to a live environment)
+
+On every green `main`, the **app** repo deploys `demo-shop-app` to **Render** and a
+post-deploy smoke runs against the live URL — closing `test → build → deploy →
+verify`. See [ADR-010](docs/adr/010-deploy-to-environment-and-post-deploy-smoke.md).
+
+The deploy is wired in code (`demo-shop-app/render.yaml` + `ci.yml`), but the host
+itself is a **one-time manual setup** the pipeline can't do. To reproduce on a fork:
+
+1. Create a Render **Web Service** from the app repo (native Node: build `npm ci`,
+   start `npm start`, health `/health`, **Auto-Deploy off**, env `JWT_SECRET` +
+   `NODE_VERSION=22`). `render.yaml` captures this as a Blueprint.
+2. In the **app** repo, add:
+   - secret **`RENDER_DEPLOY_HOOK_URL`** — the Render Deploy Hook (CI `curl`s it).
+   - variable **`RENDER_APP_URL`** — the public service URL (used as `BASE_URL`).
+
+Without these, the `deploy` / `post-deploy-smoke` jobs fail on `main` (they're
+skipped on PRs). The free tier sleeps after ~15 min idle (~50s cold start).
 
 ## Conventions
 
