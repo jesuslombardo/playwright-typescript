@@ -36,7 +36,14 @@ Test (SUT), in its own repository: [`demo-shop-app`](https://github.com/jesuslom
 - **Ephemeral SUT:** every test job checks out `demo-shop-app` into `./app` and
   Playwright's `webServer` starts it from source. `BASE_URL` overrides this to
   target an already-running instance. The app also publishes a Docker image to
-  **GHCR** from its own CI (a demonstrated capability).
+  **GHCR** from its own CI.
+- **Two SUT strategies, kept on purpose (Step 37):** the pyramid jobs build
+  **from source** (zero infra, max reproducibility); a parallel `api-via-image`
+  job pulls the **published GHCR image** and runs it as a CI `services:`
+  container ("test the artifact you ship"). The image is pinned to the same
+  commit as `.app-version` (resolve the tag → its SHA, since the app tags images
+  by commit SHA), so it stays reproducible (ADR-013). The image job is didactic
+  and **not a required check**.
 
 ## Consequences
 
@@ -54,9 +61,12 @@ Test (SUT), in its own repository: [`demo-shop-app`](https://github.com/jesuslom
 - **Two repos to maintain** and keep in sync (versioning the SUT vs. the tests).
 - The pipeline now depends on a second repository being checked out and installed,
   adding a step (and coupling the framework to the app repo's location).
-- The published GHCR image is **private** by default; consuming it as a CI
-  `services:` container would need the package made public (one setting) or
-  registry auth — so we run from source instead, which needs no extra setup.
+- A second SUT strategy (service container) means **two ways the app can be wrong
+  in CI** to reason about (source build vs published image). Accepted: the
+  contrast is the teaching point, and only build-from-source is a required gate.
+- The published GHCR image used to be **private** (needing the package made public
+  or registry auth). It was made **public** (Step 37), which is why the
+  `services:` container now pulls anonymously — no `credentials:` block.
 
 ## Alternatives considered
 
@@ -66,5 +76,8 @@ Test (SUT), in its own repository: [`demo-shop-app`](https://github.com/jesuslom
   rejected: heavy frameworks (Angular/React/Java), no control over uptime or data.
 - **Monorepo (app + tests together)** — rejected: less realistic for a QA
   portfolio and skips the cross-repo CI lessons; reconsider if sync cost hurts.
-- **Pull the GHCR image as a CI `services:` container** — deferred: cleaner once
-  the package is public; build-from-source is more reproducible with zero setup.
+- **Pull the GHCR image as a CI `services:` container** — **adopted (Step 37)**
+  as a _parallel_ strategy now that the package is public, not a replacement:
+  build-from-source stays the required gate (more reproducible, zero infra),
+  while the image job demonstrates "test what you ship". Earlier deferred while
+  the package was private.

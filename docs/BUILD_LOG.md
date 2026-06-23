@@ -1721,6 +1721,52 @@ npx playwright test                 # 31 passed (was ~17) — data-driven added 
 
 ---
 
+## Step 37 — SUT as a service container: test the published GHCR image
+
+**Status:** Done
+
+**What**
+
+- Made the **`demo-shop-app` GHCR image public** (one UI click — a package-scope token can't flip it). Verified with an anonymous `docker pull` + a run that served `/health` 200.
+- Added a **second SUT strategy** to `ci.yml`, parallel to build-from-source: a `api-via-image` job that runs the **published image as a CI `services:` container** and points the API suite at it via `BASE_URL` (so Playwright's `webServer` stays off).
+- **Pinned reproducibly:** a small `resolve-app-image` job resolves `.app-version` (`v1.0.0`) → its **commit SHA** (the app's CI tags images by SHA), and the service pins `ghcr.io/jesuslombardo/demo-shop-app:<sha>`. One source of truth, same commit as the rest of the pyramid (ADR-013).
+- The image job is **didactic and NOT a required check** — build-from-source stays the gate. Updated **[ADR-006](adr/006-custom-sut-and-testing-pyramid.md)** (the deferred `services:` alternative is now adopted, as a parallel strategy).
+
+**Why**
+
+- "**Test the artifact you ship**": the published image is what gets deployed, so testing against it is closer to production parity than a fresh source build. Keeping **both** strategies teaches the trade-off (source = zero infra + max reproducibility; image = parity, no per-job install/build).
+- The package being **public** unlocks anonymous pull → no `credentials:` block, and free unlimited distribution (relevant for future course learners running the app).
+
+**Commands**
+
+```bash
+# verify it's public + runnable (anonymous)
+docker logout ghcr.io
+docker pull ghcr.io/jesuslombardo/demo-shop-app:latest
+
+# resolve the pinned tag → the image's commit SHA (what CI does)
+git ls-remote https://github.com/jesuslombardo/demo-shop-app "refs/tags/$(cat .app-version)^{}"
+
+# the exact thing the new job runs, locally:
+docker run -d --name sut -p 3000:3000 ghcr.io/jesuslombardo/demo-shop-app:eb9795af…
+BASE_URL=http://localhost:3000 npm run test:api   # 24 passed
+```
+
+**Files**
+
+- `.github/workflows/ci.yml` (new `resolve-app-image` + `api-via-image` jobs)
+- `docs/adr/006-…md`, `docs/ROADMAP.md`
+
+**Learnings**
+
+- **Public package = anonymous pull + free distribution**; private needs a PAT with `read:packages` per consumer and counts against quota.
+- A **service container's `image:` is resolved at job startup**, so a value computed in a step can't feed it — pass it via a prior job's `outputs` (hence `resolve-app-image`).
+- **Pin the image like you pin the source**: tags-by-SHA + resolving `.app-version` keeps the artifact reproducible and consistent with the build-from-source jobs — `:latest` would be a moving target.
+- **`BASE_URL` set ⇒ Playwright skips `webServer`** and targets the running service — the same switch used for live-env smoke (Step 32).
+- Source-build vs published-image are **complementary**, not either/or — real pipelines often do both; only the reproducible one needs to be the required gate.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

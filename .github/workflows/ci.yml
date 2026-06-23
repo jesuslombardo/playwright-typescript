@@ -102,6 +102,98 @@ jobs:
             test-results/
           retention-days: 14
 
+  # ── Alternative SUT strategy: the PUBLISHED image as a service container ───
+  # The `api`/`smoke`/`regression` jobs check out the app source and build it
+  # ("test from source", zero infra). This pair shows the other industry option:
+  # pull the app's PUBLISHED Docker image from GHCR and run it as a service
+  # container — "test the artifact you actually ship". Both are kept on purpose
+  # to teach the trade-off; see ADR-006.
+  #
+  # Reproducible like the rest: the image is pinned to the SAME commit as
+  # .app-version. The app's CI tags images by commit SHA, so we resolve the
+  # v1.0.0 tag → its SHA (one source of truth, ADR-013) and pin to that.
+  # DIDACTIC — this job is intentionally NOT a required check.
+  resolve-app-image:
+    name: Resolve app image tag
+    needs: quality
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+
+    steps:
+      - name: Checkout testing repository
+        uses: actions/checkout@v6
+
+      - name: Resolve .app-version tag to the image's commit SHA
+        id: resolve
+        run: |
+          APP_VERSION=$(tr -d '[:space:]' < .app-version)
+          SHA=$(git ls-remote https://github.com/jesuslombardo/demo-shop-app "refs/tags/${APP_VERSION}^{}" | cut -f1)
+          if [ -z "$SHA" ]; then
+            echo "Could not resolve $APP_VERSION to a commit SHA" >&2
+            exit 1
+          fi
+          echo "tag=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Pinned image: ghcr.io/jesuslombardo/demo-shop-app:$SHA ($APP_VERSION)"
+
+  api-via-image:
+    name: API tests (via published image)
+    needs: [quality, resolve-app-image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Start the SUT from its published image. No `credentials:` needed — the
+    # package is public, so the runner pulls it anonymously.
+    services:
+      app:
+        image: ghcr.io/jesuslombardo/demo-shop-app:${{ needs.resolve-app-image.outputs.tag }}
+        ports:
+          - 3000:3000
+        # The app signs/verifies JWTs with this key; empty on forks → the image
+        # falls back to its built-in default, so the suite still passes.
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+    steps:
+      - name: Checkout testing repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install testing dependencies
+        run: npm ci
+
+      - name: Wait for the published app to be healthy
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/health > /dev/null; then
+              echo "app is up"; exit 0
+            fi
+            echo "waiting for app... ($i)"; sleep 2
+          done
+          echo "app did not become healthy in time" >&2
+          exit 1
+
+      # No webServer here: BASE_URL points Playwright at the running service.
+      - name: Run API tests against the published image
+        env:
+          BASE_URL: http://localhost:3000
+        run: npm run test:api
+
+      - name: Upload API (image) debug bundle on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-via-image-debug
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
   smoke:
     name: Smoke
     needs: api

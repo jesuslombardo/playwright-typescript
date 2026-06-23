@@ -134,22 +134,23 @@ reproducible random data, or larger-volume data generation for perf tests.
 
 ## Phase 5 — Hardening (when the framework grows)
 
-| Item                             | Purpose                                                                             | Status        |
-| -------------------------------- | ----------------------------------------------------------------------------------- | ------------- |
-| **Playwright Docker image**      | Fixed slow CI — preinstalled browsers + OS deps (Step 21)                           | ✅            |
-| **Tags (`@smoke`)**              | Smoke → regression staging in CI (Step 22)                                          | ✅            |
-| **API tests + testing pyramid**  | API tests gate E2E in CI (pyramid: API → smoke → regression)                        | ✅ (Step 24)  |
-| **Cross-repo integration check** | App PRs run API + smoke vs the PR app — required gate (Step 25)                     | ✅            |
-| **Execution cadence**            | Fast PR gate (API+smoke) + nightly cross-browser regression (Step 26, ADR-007)      | ✅            |
-| **App test tiers**               | demo-shop-app unit → integration mini-pyramid in its own CI (Step 27)               | ✅            |
-| Sharding                         | Split regression across parallel shards + merge-reports (Step 30, ADR-008)          | ✅ (didactic) |
-| Matrix                           | `api` job over Node `[22, 24]` — compatibility matrix (Step 31, ADR-009)            | ✅ (didactic) |
-| **CD: deploy to environment**    | App deployed to Render + post-deploy smoke vs live URL (Step 32, ADR-010)           | ✅            |
-| **CD: staging → prod + gate**    | Promote same commit through staging → prod, manual approval gate (Step 34, ADR-012) | ✅            |
-| **Cross-repo version pinning**   | Test against a fixed app tag via `.app-version`, not `@main` (Step 35, ADR-013)     | ✅            |
-| `CONTRIBUTING.md`                | Two-repo flow + onboarding (Step 25)                                                | ✅            |
-| **Visual regression**            | One stable baseline of the login page, generated in CI's image (Step 33, ADR-011)   | ✅            |
-| More domains                     | More E2E flows, more visual coverage, etc.                                          | ⬜            |
+| Item                             | Purpose                                                                                | Status        |
+| -------------------------------- | -------------------------------------------------------------------------------------- | ------------- |
+| **Playwright Docker image**      | Fixed slow CI — preinstalled browsers + OS deps (Step 21)                              | ✅            |
+| **Tags (`@smoke`)**              | Smoke → regression staging in CI (Step 22)                                             | ✅            |
+| **API tests + testing pyramid**  | API tests gate E2E in CI (pyramid: API → smoke → regression)                           | ✅ (Step 24)  |
+| **Cross-repo integration check** | App PRs run API + smoke vs the PR app — required gate (Step 25)                        | ✅            |
+| **Execution cadence**            | Fast PR gate (API+smoke) + nightly cross-browser regression (Step 26, ADR-007)         | ✅            |
+| **App test tiers**               | demo-shop-app unit → integration mini-pyramid in its own CI (Step 27)                  | ✅            |
+| Sharding                         | Split regression across parallel shards + merge-reports (Step 30, ADR-008)             | ✅ (didactic) |
+| Matrix                           | `api` job over Node `[22, 24]` — compatibility matrix (Step 31, ADR-009)               | ✅ (didactic) |
+| **CD: deploy to environment**    | App deployed to Render + post-deploy smoke vs live URL (Step 32, ADR-010)              | ✅            |
+| **CD: staging → prod + gate**    | Promote same commit through staging → prod, manual approval gate (Step 34, ADR-012)    | ✅            |
+| **Cross-repo version pinning**   | Test against a fixed app tag via `.app-version`, not `@main` (Step 35, ADR-013)        | ✅            |
+| **SUT as a service container**   | Published GHCR image (now public) run as a CI `services:` container (Step 37, ADR-006) | ✅ (didactic) |
+| `CONTRIBUTING.md`                | Two-repo flow + onboarding (Step 25)                                                   | ✅            |
+| **Visual regression**            | One stable baseline of the login page, generated in CI's image (Step 33, ADR-011)      | ✅            |
+| More domains                     | More E2E flows, more visual coverage, etc.                                             | ⬜            |
 
 **Note — API tests + testing pyramid (DONE, Step 24):**
 
