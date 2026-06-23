@@ -95,7 +95,7 @@ This project is considered successful when the repository enables:
 ✅ Phase 2   Automation (6 E2E, POM, fixtures, 4 ADRs)
 ✅ Phase 3   Husky + lint-staged · anti-flaky (ADR-005) · reporting 💤 NTH
 ✅ Phase 4   CI/CD (pipeline + CD via GitHub Pages) + branch-protection gate
-🟡 Phase 5   Docker fast CI ✅ · tags ✅ · pyramid ✅ · sharding ✅ · matrix ✅ · CD deploy ✅
+🟡 Phase 5   Docker fast CI ✅ · tags ✅ · pyramid ✅ · sharding ✅ · matrix ✅ · CD deploy ✅ · visual ✅
 ```
 
 **Companion app — the System Under Test:** API + E2E tests run against our own
@@ -123,6 +123,7 @@ and a thin smoke runs against that live URL. See [ADR-010](docs/adr/010-deploy-t
 - [x] Sharding — regression split across parallel shards + merge-reports (Step 30, ADR-008)
 - [x] Matrix — `api` job across Node `[22, 24]` (Step 31, ADR-009)
 - [x] **CD: deploy to a live environment** (Render) + post-deploy smoke vs the live URL (Step 32, ADR-010)
+- [x] Visual regression — one stable login-page baseline, generated in CI's image (Step 33, ADR-011)
 
 **Phase 3 — Quality & Reporting** (core complete)
 

@@ -29,7 +29,7 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
 🟡 Phase 3   Hooks ✅ (Husky) + anti-flaky ✅ (ADR-005) · reporting 💤 NTH
 ⬜ data/     Structured test data layer
-🟡 Phase 5   Docker ✅ · tags ✅ · API tests + pyramid ✅ · sharding ✅ · matrix ✅ · CD deploy ✅
+🟡 Phase 5   Docker ✅ · tags ✅ · pyramid ✅ · sharding ✅ · matrix ✅ · CD deploy ✅ · visual ✅
 ```
 
 ---
@@ -127,19 +127,20 @@ Introduce when static config in `config/` is not enough.
 
 ## Phase 5 — Hardening (when the framework grows)
 
-| Item                             | Purpose                                                                        | Status        |
-| -------------------------------- | ------------------------------------------------------------------------------ | ------------- |
-| **Playwright Docker image**      | Fixed slow CI — preinstalled browsers + OS deps (Step 21)                      | ✅            |
-| **Tags (`@smoke`)**              | Smoke → regression staging in CI (Step 22)                                     | ✅            |
-| **API tests + testing pyramid**  | API tests gate E2E in CI (pyramid: API → smoke → regression)                   | ✅ (Step 24)  |
-| **Cross-repo integration check** | App PRs run API + smoke vs the PR app — required gate (Step 25)                | ✅            |
-| **Execution cadence**            | Fast PR gate (API+smoke) + nightly cross-browser regression (Step 26, ADR-007) | ✅            |
-| **App test tiers**               | demo-shop-app unit → integration mini-pyramid in its own CI (Step 27)          | ✅            |
-| Sharding                         | Split regression across parallel shards + merge-reports (Step 30, ADR-008)     | ✅ (didactic) |
-| Matrix                           | `api` job over Node `[22, 24]` — compatibility matrix (Step 31, ADR-009)       | ✅ (didactic) |
-| **CD: deploy to environment**    | App deployed to Render + post-deploy smoke vs live URL (Step 32, ADR-010)      | ✅            |
-| `CONTRIBUTING.md`                | Two-repo flow + onboarding (Step 25)                                           | ✅            |
-| More domains                     | Visual regression, more E2E flows, etc.                                        | ⬜            |
+| Item                             | Purpose                                                                           | Status        |
+| -------------------------------- | --------------------------------------------------------------------------------- | ------------- |
+| **Playwright Docker image**      | Fixed slow CI — preinstalled browsers + OS deps (Step 21)                         | ✅            |
+| **Tags (`@smoke`)**              | Smoke → regression staging in CI (Step 22)                                        | ✅            |
+| **API tests + testing pyramid**  | API tests gate E2E in CI (pyramid: API → smoke → regression)                      | ✅ (Step 24)  |
+| **Cross-repo integration check** | App PRs run API + smoke vs the PR app — required gate (Step 25)                   | ✅            |
+| **Execution cadence**            | Fast PR gate (API+smoke) + nightly cross-browser regression (Step 26, ADR-007)    | ✅            |
+| **App test tiers**               | demo-shop-app unit → integration mini-pyramid in its own CI (Step 27)             | ✅            |
+| Sharding                         | Split regression across parallel shards + merge-reports (Step 30, ADR-008)        | ✅ (didactic) |
+| Matrix                           | `api` job over Node `[22, 24]` — compatibility matrix (Step 31, ADR-009)          | ✅ (didactic) |
+| **CD: deploy to environment**    | App deployed to Render + post-deploy smoke vs live URL (Step 32, ADR-010)         | ✅            |
+| `CONTRIBUTING.md`                | Two-repo flow + onboarding (Step 25)                                              | ✅            |
+| **Visual regression**            | One stable baseline of the login page, generated in CI's image (Step 33, ADR-011) | ✅            |
+| More domains                     | More E2E flows, more visual coverage, etc.                                        | ⬜            |
 
 **Note — API tests + testing pyramid (DONE, Step 24):**
 
@@ -211,6 +212,7 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 | Sharding + merge-reports       | `.github/workflows/ci.yml` matrix, ADR-008, Step 30        |
 | Compatibility matrix (Node)    | `api` job `matrix.node`, ADR-009, Step 31                  |
 | CD deploy + post-deploy smoke  | `demo-shop-app` `render.yaml` + `ci.yml`, ADR-010, Step 32 |
+| Visual regression              | `tests/visual/`, ADR-011, Step 33                          |
 | Testing pyramid (API → E2E)    | `.github/workflows/ci.yml`, ADR-006                        |
 | System Under Test (own app)    | `demo-shop-app` repo, ADR-006, BUILD_LOG Step 23           |
 | Ephemeral SUT (`webServer`)    | `playwright.config.ts`, `app:setup` script                 |

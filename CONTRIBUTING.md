@@ -144,6 +144,27 @@ itself is a **one-time manual setup** the pipeline can't do. To reproduce on a f
 Without these, the `deploy` / `post-deploy-smoke` jobs fail on `main` (they're
 skipped on PRs). The free tier sleeps after ~15 min idle (~50s cold start).
 
+## Visual regression
+
+`tests/visual/` holds screenshot tests (`toHaveScreenshot`). Baselines are
+**environment-specific** (fonts/anti-aliasing), so they are generated in the
+**same Playwright Docker image CI uses** — never with a raw `--update-snapshots`
+on your machine, which would commit a PNG that fails in CI. See
+[ADR-011](docs/adr/011-visual-regression-baseline-strategy.md).
+
+After an intentional UI change, regenerate the baseline:
+
+```bash
+docker run --rm -v "$PWD":/work -w /work \
+  -e BASE_URL=https://demo-shop-app-mlkv.onrender.com \
+  --user "$(id -u):$(id -g)" -e HOME=/tmp \
+  mcr.microsoft.com/playwright:v1.61.0-jammy \
+  npx playwright test tests/visual --project=chromium --update-snapshots
+```
+
+Then run it again **without** `--update-snapshots` (still in the image) to confirm
+it's deterministic, and commit the updated PNG.
+
 ## Conventions
 
 - **Language:** all code, comments, commit messages and docs are written in
