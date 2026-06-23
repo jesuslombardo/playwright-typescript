@@ -63,10 +63,17 @@ jobs:
       - name: Checkout testing repository
         uses: actions/checkout@v6
 
-      - name: Checkout demo-shop-app (System Under Test)
+      # Cross-repo version pin: test against a FIXED app tag (.app-version),
+      # not a moving @main, so CI is reproducible. Bump = a deliberate PR that
+      # edits .app-version. See ADR-013.
+      - name: Resolve pinned app version
+        run: echo "APP_VERSION=$(tr -d '[:space:]' < .app-version)" >> "$GITHUB_ENV"
+
+      - name: Checkout demo-shop-app (System Under Test) at pinned version
         uses: actions/checkout@v6
         with:
           repository: jesuslombardo/demo-shop-app
+          ref: ${{ env.APP_VERSION }}
           path: app
 
       - name: Setup Node.js
@@ -108,10 +115,17 @@ jobs:
       - name: Checkout testing repository
         uses: actions/checkout@v6
 
-      - name: Checkout demo-shop-app (System Under Test)
+      # Cross-repo version pin: test against a FIXED app tag (.app-version),
+      # not a moving @main, so CI is reproducible. Bump = a deliberate PR that
+      # edits .app-version. See ADR-013.
+      - name: Resolve pinned app version
+        run: echo "APP_VERSION=$(tr -d '[:space:]' < .app-version)" >> "$GITHUB_ENV"
+
+      - name: Checkout demo-shop-app (System Under Test) at pinned version
         uses: actions/checkout@v6
         with:
           repository: jesuslombardo/demo-shop-app
+          ref: ${{ env.APP_VERSION }}
           path: app
 
       - name: Setup Node.js
@@ -162,10 +176,17 @@ jobs:
       - name: Checkout testing repository
         uses: actions/checkout@v6
 
-      - name: Checkout demo-shop-app (System Under Test)
+      # Cross-repo version pin: test against a FIXED app tag (.app-version),
+      # not a moving @main, so CI is reproducible. Bump = a deliberate PR that
+      # edits .app-version. See ADR-013.
+      - name: Resolve pinned app version
+        run: echo "APP_VERSION=$(tr -d '[:space:]' < .app-version)" >> "$GITHUB_ENV"
+
+      - name: Checkout demo-shop-app (System Under Test) at pinned version
         uses: actions/checkout@v6
         with:
           repository: jesuslombardo/demo-shop-app
+          ref: ${{ env.APP_VERSION }}
           path: app
 
       - name: Setup Node.js

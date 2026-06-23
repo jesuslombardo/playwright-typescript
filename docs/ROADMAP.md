@@ -29,7 +29,7 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
 🟡 Phase 3   Hooks ✅ (Husky) + anti-flaky ✅ (ADR-005) · reporting 💤 NTH
 ⬜ data/     Structured test data layer
-🟡 Phase 5   Docker ✅ · tags ✅ · pyramid ✅ · sharding ✅ · matrix ✅ · CD deploy ✅ · visual ✅ · staging→prod gate ✅
+🟡 Phase 5   Docker ✅ · tags ✅ · pyramid ✅ · sharding ✅ · matrix ✅ · CD ✅ · visual ✅ · staging→prod gate ✅ · app pin ✅
 ```
 
 ---
@@ -139,6 +139,7 @@ Introduce when static config in `config/` is not enough.
 | Matrix                           | `api` job over Node `[22, 24]` — compatibility matrix (Step 31, ADR-009)            | ✅ (didactic) |
 | **CD: deploy to environment**    | App deployed to Render + post-deploy smoke vs live URL (Step 32, ADR-010)           | ✅            |
 | **CD: staging → prod + gate**    | Promote same commit through staging → prod, manual approval gate (Step 34, ADR-012) | ✅            |
+| **Cross-repo version pinning**   | Test against a fixed app tag via `.app-version`, not `@main` (Step 35, ADR-013)     | ✅            |
 | `CONTRIBUTING.md`                | Two-repo flow + onboarding (Step 25)                                                | ✅            |
 | **Visual regression**            | One stable baseline of the login page, generated in CI's image (Step 33, ADR-011)   | ✅            |
 | More domains                     | More E2E flows, more visual coverage, etc.                                          | ⬜            |
@@ -214,6 +215,7 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 | Compatibility matrix (Node)    | `api` job `matrix.node`, ADR-009, Step 31                        |
 | CD deploy + post-deploy smoke  | `demo-shop-app` `render.yaml` + `ci.yml`, ADR-010, Step 32       |
 | Staging→prod + approval gate   | `demo-shop-app` `ci.yml` + GitHub Environments, ADR-012, Step 34 |
+| Cross-repo version pin         | `.app-version` + `ci.yml`/`app:setup`, ADR-013, Step 35          |
 | Visual regression              | `tests/visual/`, ADR-011, Step 33                                |
 | Testing pyramid (API → E2E)    | `.github/workflows/ci.yml`, ADR-006                              |
 | System Under Test (own app)    | `demo-shop-app` repo, ADR-006, BUILD_LOG Step 23                 |

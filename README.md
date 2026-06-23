@@ -130,6 +130,7 @@ smoke-tested again. Live: [staging](https://demo-shop-app-staging.onrender.com) 
 - [x] **CD: deploy to a live environment** (Render) + post-deploy smoke vs the live URL (Step 32, ADR-010)
 - [x] Visual regression — one stable login-page baseline, generated in CI's image (Step 33, ADR-011)
 - [x] **CD: staging → production promotion** with a manual approval gate (GitHub Environments) (Step 34, ADR-012)
+- [x] **Cross-repo version pinning** — test against a fixed app tag (`.app-version`), not `@main` (Step 35, ADR-013)
 
 **Phase 3 — Quality & Reporting** (core complete)
 
