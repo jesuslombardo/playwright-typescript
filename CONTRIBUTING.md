@@ -96,13 +96,13 @@ breaks the critical paths.
 The full cross-browser regression is **not** run on every PR — it's scheduled.
 See [ADR-007](docs/adr/007-test-execution-cadence.md).
 
-| Trigger                                | What runs                                                |
-| -------------------------------------- | -------------------------------------------------------- |
-| **App PR**                             | API + `@smoke` (fast gate)                               |
-| **This repo's PR**                     | Full pyramid (API → smoke → regression)                  |
-| **Push to `main`** (this repo)         | Full pyramid + CD (report → Pages)                       |
-| **Push to `main`** (app repo)          | App CI + **deploy to Render** + post-deploy smoke (live) |
-| **Nightly** (`nightly.yml`, 06:00 UTC) | API + full **cross-browser** regression vs. app `@main`  |
+| Trigger                                | What runs                                                                    |
+| -------------------------------------- | ---------------------------------------------------------------------------- |
+| **App PR**                             | API + `@smoke` (fast gate)                                                   |
+| **This repo's PR**                     | Full pyramid (API → smoke → regression)                                      |
+| **Push to `main`** (this repo)         | Full pyramid + CD (report → Pages)                                           |
+| **Push to `main`** (app repo)          | App CI → deploy **staging** → smoke → **approval** → deploy **prod** → smoke |
+| **Nightly** (`nightly.yml`, 06:00 UTC) | API + full **cross-browser** regression vs. app `@main`                      |
 
 Run the nightly on demand from the Actions tab (**Run workflow**) or:
 
@@ -125,24 +125,35 @@ Config uses `process.env.X || default`, so the same code works with or without s
 (shared by all jobs) — see `ci.yml` / `nightly.yml`. To prove a secret is wired
 without leaking it: `echo "X provided -> ${X:+yes}"` (GitHub also masks secret values in logs).
 
-## Deployment (CD to a live environment)
+## Deployment (CD: staging → production with an approval gate)
 
-On every green `main`, the **app** repo deploys `demo-shop-app` to **Render** and a
-post-deploy smoke runs against the live URL — closing `test → build → deploy →
-verify`. See [ADR-010](docs/adr/010-deploy-to-environment-and-post-deploy-smoke.md).
+On every green `main`, the **app** repo promotes the **same commit** through two
+environments with a human checkpoint between them:
 
-The deploy is wired in code (`demo-shop-app/render.yaml` + `ci.yml`), but the host
-itself is a **one-time manual setup** the pipeline can't do. To reproduce on a fork:
+```
+… → deploy STAGING → smoke staging → ⏸ manual approval → deploy PRODUCTION → smoke prod
+```
 
-1. Create a Render **Web Service** from the app repo (native Node: build `npm ci`,
-   start `npm start`, health `/health`, **Auto-Deploy off**, env `JWT_SECRET` +
-   `NODE_VERSION=22`). `render.yaml` captures this as a Blueprint.
-2. In the **app** repo, add:
-   - secret **`RENDER_DEPLOY_HOOK_URL`** — the Render Deploy Hook (CI `curl`s it).
-   - variable **`RENDER_APP_URL`** — the public service URL (used as `BASE_URL`).
+See [ADR-010](docs/adr/010-deploy-to-environment-and-post-deploy-smoke.md) (deploy +
+verify) and [ADR-012](docs/adr/012-staging-production-promotion-gate.md) (promotion +
+gate). The pipeline is wired in code (`demo-shop-app/ci.yml`); the hosts + the gate
+are a **one-time manual setup**. To reproduce on a fork:
 
-Without these, the `deploy` / `post-deploy-smoke` jobs fail on `main` (they're
-skipped on PRs). The free tier sleeps after ~15 min idle (~50s cold start).
+1. Two Render **Web Services** (`…-staging` and production) from the app repo —
+   native Node: build `npm ci`, start `npm start`, health `/health`,
+   **Auto-Deploy off**, env `JWT_SECRET` + `NODE_VERSION=22` (`render.yaml` is the
+   Blueprint for one).
+2. Two **GitHub Environments** in the app repo:
+   - `staging` — no rule.
+   - `production` — **Required reviewers** = you (this is the approval gate; the
+     `deploy-production` job pauses until you approve in the Actions tab).
+3. Secrets/variables in the **app** repo:
+   - staging: secret `RENDER_STAGING_DEPLOY_HOOK_URL`, variable `RENDER_STAGING_URL`.
+   - production: secret `RENDER_DEPLOY_HOOK_URL`, variable `RENDER_APP_URL`.
+
+Without these the CD jobs fail on `main` (they're skipped on PRs). The free tier
+sleeps after ~15 min idle (~50s cold start), so readiness waits until the deployed
+commit **and** `/` **and** `/api/products` are 200 before smoking, not just `/health`.
 
 ## Visual regression
 

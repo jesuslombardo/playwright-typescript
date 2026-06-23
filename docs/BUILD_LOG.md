@@ -1595,6 +1595,50 @@ docker run --rm -v "$PWD":/work -w /work -e BASE_URL=<live-url> \
 
 ---
 
+## Step 34 — Staging → production promotion with a manual approval gate
+
+**Status:** Done
+
+**What**
+
+- Turned the single deploy (Step 32) into an **environment promotion** on the app pipeline: `deploy-staging → smoke-staging → ⏸ approval → deploy-production → smoke-production`.
+- **Two Render services** (`demo-shop-app-staging` + production), both deploying the **same commit**; each smoked against its own live URL.
+- **GitHub Environments**: `staging` (no rule) + `production` with a **required reviewer** → the prod deploy **pauses for manual approval** in the Actions UI.
+- New staging config: secret `RENDER_STAGING_DEPLOY_HOOK_URL`, variable `RENDER_STAGING_URL`.
+- Decision + trade-offs in **[ADR-012](adr/012-staging-production-promotion-gate.md)**.
+
+**Why**
+
+- A single environment (Step 32) has no staging safety net and no human checkpoint. The industry baseline is **promote the same artifact: staging → (gate) → prod**. Two envs + one approval gate is the 80/20 of CD.
+
+**The bug we hit + fixed (readiness)**
+
+- First run **flaked**: right after the Render deploy, `/health` already returned 200 (so the `/health`-only wait said "ready"), but the static UI (`/`) and `/api/login` were still **404** during the free-tier swap → the smoke timed out on login/products.
+- Fix: readiness now requires the **deployed commit AND `/` AND `/api/products`** to be 200 for **3 consecutive checks** before smoking. _A `/health`-only readiness check is insufficient when `/health` is served before the rest of the app is ready._
+
+**Commands**
+
+```bash
+# environments (production carries the required-reviewer gate)
+gh api -X PUT repos/.../environments/staging
+gh api -X PUT repos/.../environments/production --input -   # reviewers:[{type:User,id:...}]
+# approval is a human clicking "Review deployments → Approve" on the run
+```
+
+**Files**
+
+- `demo-shop-app/.github/workflows/ci.yml` (4 CD jobs + robust wait)
+- GitHub Environments (staging/production), staging secret + variable
+- this repo: `docs/adr/012-…md`, README, ROADMAP, CONTRIBUTING
+
+**Learnings**
+
+- The **manual gate** is just a GitHub Environment **protection rule** (required reviewer) on the deploy job — no custom tooling.
+- **Promote the same commit**, don't rebuild per environment — avoids drift between what you tested and what you ship.
+- **Readiness probes the routes you use.** `/health` proves the process is up, not that the whole app is serving — especially on free tiers that swap instances.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
