@@ -1906,6 +1906,48 @@ npx playwright test --project=mobile-safari --project=mobile-chrome   # 6 passed
 
 ---
 
+## Step 42 — Microservices mode: extract `auth-service` (additive, monolith untouched)
+
+**Status:** Done
+
+**What**
+
+- Refactored the SUT's `app.js` into small `mount*()` helpers (`mountSystem/Auth/Products/Docs/Static`); `createApp()` mounts them all → the **monolith is behaviourally unchanged**.
+- Added three service entrypoints under `services/` — `auth` (3001, login + JWT), `products` (3002, catalogue + own db + docs + UI), `gateway` (3000, reverse proxy `/api/login`→auth, rest→products) — plus `docker-compose.yml` running all three from the **same image**, sharing `JWT_SECRET`.
+- App: new scripts `start:auth|products|gateway`, `micro` (`docker compose up --build`); new **prod** dep `http-proxy-middleware`.
+- Testing repo: `test:micro` script (`BASE_URL=http://localhost:3000`, api project, against a running stack); docs (ADR-016, CONTRIBUTING, ROADMAP).
+
+**Why**
+
+- First step of the **microservices-testing module** (advanced/optional). One real network boundary unlocks consumer-driven contract testing (Pact, next) without raising the barrier for beginners — the monolith stays the default. Scope is deliberately **auth-only**; a full system (orders) is deferred to a possible Part 2. See [ADR-016](adr/016-auth-service-split-microservices-mode.md).
+
+**Commands**
+
+```bash
+# monolith (unchanged) — app repo
+npm test            # 15 passed   ;   npm run lint   # clean
+
+# microservices — app repo
+docker compose up --build           # gateway:3000 + auth:3001 + products:3002
+
+# same suite, micro topology — testing repo
+BASE_URL=http://localhost:3000 npm run test:api    # 38 passed
+```
+
+**Files**
+
+- App repo (`demo-shop-app`, branch `feat/auth-service-split`): `app.js`, `services/{auth,products,gateway}/index.js`, `docker-compose.yml`, `package.json`, `README.md`.
+- Testing repo: `package.json` (`test:micro`), `docs/adr/016-auth-service-split-microservices-mode.md`, `docs/adr/README.md`, `docs/BUILD_LOG.md`, `docs/ROADMAP.md`, `CONTRIBUTING.md`.
+
+**Learnings**
+
+- **Monolith vs microservices is often just composition, not code** — the same `mount*()` helpers build either topology, so the split is _additive_ instead of a rewrite.
+- **The gateway wasn't optional.** The same-origin UI (`fetch('/api/login')`) forces a single front door the moment auth moves out — a concrete "here's what actually breaks when you split" lesson.
+- **JWT trust is local.** `products` verifies auth's token with the shared secret in-process; auth is **not** called per request. The boundary is at login + deploy — which is exactly why splitting auth is cheap.
+- **Good API tests are topology-agnostic** — the existing 38 api tests passed unchanged against the gateway, proving the suite doesn't care what's behind the URL.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

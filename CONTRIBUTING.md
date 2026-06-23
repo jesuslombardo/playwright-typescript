@@ -202,6 +202,29 @@ credentials). See [`data/README.md`](data/README.md) and [ADR-014](docs/adr/014-
 - **Need a pre-existing entity?** Use the `apiProduct` fixture
   (`fixtures/product.fixture.ts`) — it creates via API and cleans up after, even on failure.
 
+## Microservices mode (optional, advanced)
+
+The SUT can run **split into services** instead of as one process — the teaching
+vehicle for the microservices-testing module (contract testing, etc.). It is
+**purely additive**: the monolith is the default and is unaffected.
+
+```bash
+# in the demo-shop-app repo — start the split stack:
+docker compose up --build       # gateway:3000 + auth:3001 + products:3002
+
+# in THIS repo — point the suite at the gateway:
+npm run test:micro              # BASE_URL=http://localhost:3000, api project
+```
+
+- **Same code, two compositions** — `app.js` exposes `mount*()` helpers; the
+  monolith mounts all, each service mounts only its slice. Logic is shared, not forked.
+- **The gateway is the single front door** the same-origin UI forces
+  (`/api/login`→auth, everything else→products).
+- **Cross-service trust is local** — auth signs JWTs, products verifies them with
+  the shared `JWT_SECRET` (HS256); auth isn't called per request.
+- The same `BASE_URL` makes the **whole suite topology-agnostic** — it runs
+  unchanged against monolith or microservices. See [ADR-016](docs/adr/016-auth-service-split-microservices-mode.md).
+
 ## Conventions
 
 - **Language:** all code, comments, commit messages and docs are written in
