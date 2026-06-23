@@ -28,6 +28,7 @@ npm run test:smoke       # @smoke E2E (critical path)
 npm run test:regression  # full E2E (excludes @api)
 npm test                 # everything (api + e2e)
 npm run test:cross-browser   # all three browsers locally
+npm run test:ai          # AI suite (opt-in) — needs GEMINI_API_KEY; skips without it
 ```
 
 `npm test` and `npm run test:regression` also run the **mobile** projects —
@@ -132,7 +133,10 @@ Config uses `process.env.X || default`, so the same code works with or without s
 - **Sensitive values** come from a **GitHub Secret** in CI and a gitignored `.env`
   locally; never committed. Example: **`JWT_SECRET`** (the SUT's JWT signing key) is
   injected from a Secret in CI and forwarded to the app via `playwright.config.ts`
-  (`webServer.env`); locally it falls back to the app's default.
+  (`webServer.env`); locally it falls back to the app's default. **`GEMINI_API_KEY`**
+  (the AI suite's Gemini key) follows the same pattern — a `GEMINI_API_KEY` GitHub
+  Secret in CI, a gitignored `.env` locally — but with **no default**: the `@ai`
+  suite simply **skips** when it's absent (see AI-assisted testing below).
 
 `env:` can be scoped at **job** level (only where needed) or **workflow** level
 (shared by all jobs) — see `ci.yml` / `nightly.yml`. To prove a secret is wired
@@ -241,6 +245,41 @@ client) and auth have a **consumer-driven contract**, verified with Pact.
 
 Consumer-DRIVEN — distinct from the schema-based contract tests
 (`tests/api/contract.api.spec.ts`, Ajv vs OpenAPI) which only check response shape.
+
+## AI-assisted testing (opt-in)
+
+The `ai/` module adds two **LLM-assisted** techniques, gated so they never run in
+the deterministic suite or the CI gate. See [`ai/README.md`](ai/README.md) and
+[ADR-019](docs/adr/019-ai-assisted-testing-llm-judge-and-self-healing.md).
+
+- **LLM-as-judge** (`ai/judge.ts`) — assert a _semantic_ property a `toBe` can't
+  express (e.g. "does this description actually describe this product?").
+- **Self-healing locators** (`ai/self-healing.ts`) — recover a broken selector by
+  asking the model for a working one (only on the failure path).
+
+**Run it locally:**
+
+```bash
+# 1. Free key from Google AI Studio, then add it to your gitignored .env:
+echo 'GEMINI_API_KEY=your-key' >> .env
+# 2. Run only the AI suite (its own `ai` project; starts the SUT automatically):
+npm run test:ai
+```
+
+Without `GEMINI_API_KEY` the suite **skips green** (zero API calls). It's also
+isolated by project: `npm test` / `test:regression` / `test:smoke` never include it
+(it needs `AI_TESTS=1`, which `test:ai` sets).
+
+**Run it in CI:** the **AI suite (opt-in)** workflow (`.github/workflows/ai.yml`) is
+**manual** (`workflow_dispatch`) and **not** a required check — it uses the
+`GEMINI_API_KEY` repo Secret:
+
+```bash
+gh workflow run ai.yml
+```
+
+> Default model is `gemini-2.5-flash` (a free-tier flash model). Override with
+> `GEMINI_MODEL` if your tier exposes a different one.
 
 ## Conventions
 
