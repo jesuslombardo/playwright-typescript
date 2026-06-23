@@ -154,6 +154,7 @@ random data, or larger-volume data generation for perf tests.
 | **Mobile mini-suite**               | iPhone 13 (WebKit) + Pixel 7 (Chromium) emulation — hamburger + 1-column layout, isolated like `api` (Step 39 + 41, ADR-015) | ✅            |
 | **Microservices mode (auth split)** | Optional/additive: extract `auth-service` + gateway; same suite runs against both topologies (Step 42, ADR-016)              | ✅ (didactic) |
 | **Contract testing (Pact)**         | Consumer-driven: `shop-web`→auth, build-breaking on drift — the marquee microservices skill (Step 43, ADR-017)               | ✅ (didactic) |
+| **AI-assisted testing (opt-in)**    | LLM-as-judge (semantic coherence) + self-healing locators via Gemini; gated module, never in the CI gate (Step 45, ADR-019)  | ✅ (didactic) |
 | More domains                        | More E2E flows, more visual coverage, etc.                                                                                   | ⬜            |
 
 **Note — API tests + testing pyramid (DONE, Step 24):**
@@ -207,37 +208,38 @@ Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-re
 
 ## Map: where to find each concept in the repo
 
-| Concept                        | Where                                                                      |
-| ------------------------------ | -------------------------------------------------------------------------- |
-| Page Object Model              | `pages/`, ADR-001                                                          |
-| Components vs fixtures         | `components/`, `fixtures/`, ADR-004                                        |
-| Browser strategy (local vs CI) | `playwright.config.ts`, ADR-002                                            |
-| Code style                     | ESLint/Prettier, ADR-003                                                   |
-| CI pipeline                    | `.github/workflows/ci.yml`                                                 |
-| CD (GitHub Pages)              | job `deploy-report` in `ci.yml`                                            |
-| Secrets pattern                | `config/environments.ts`, workflow `env:`                                  |
-| Local secrets (`.env`)         | `.env.example`, `playwright.config.ts` (dotenv)                            |
-| CI run time (Docker fix)       | BUILD_LOG Step 16, Phase 5 (cache tried+reverted)                          |
-| Pre-commit hook (Husky)        | `.husky/pre-commit`, `package.json` lint-staged                            |
-| Node version pinning           | `.nvmrc`, `package.json` engines                                           |
-| Anti-flaky strategy            | ADR-005, `playwright.config.ts` (retries/traces)                           |
-| API tests (`request` fixture)  | `tests/api/`, `api` project, BUILD_LOG Step 24                             |
-| Contract testing (schema)      | `tests/api/contract.api.spec.ts` + OpenAPI, Step 29                        |
-| Authorization matrix (API)     | `tests/api/products.authz.api.spec.ts` + `data/write-ops.ts`, Step 44      |
-| TS practice (guard, generic)   | `utils/product.guard.ts`, `data/product.factory.ts` (`buildMany`), Step 44 |
-| Sharding + merge-reports       | `.github/workflows/ci.yml` matrix, ADR-008, Step 30                        |
-| Compatibility matrix (Node)    | `api` job `matrix.node`, ADR-009, Step 31                                  |
-| CD deploy + post-deploy smoke  | `demo-shop-app` `render.yaml` + `ci.yml`, ADR-010, Step 32                 |
-| Staging→prod + approval gate   | `demo-shop-app` `ci.yml` + GitHub Environments, ADR-012, Step 34           |
-| Cross-repo version pin         | `.app-version` + `ci.yml`/`app:setup`, ADR-013, Step 35                    |
-| Visual regression              | `tests/visual/`, ADR-011, Step 33                                          |
-| Testing pyramid (API → E2E)    | `.github/workflows/ci.yml`, ADR-006                                        |
-| System Under Test (own app)    | `demo-shop-app` repo, ADR-006, BUILD_LOG Step 23                           |
-| Ephemeral SUT (`webServer`)    | `playwright.config.ts`, `app:setup` script                                 |
-| Cross-repo integration gate    | `demo-shop-app/.github/workflows/e2e.yml`, Step 25                         |
-| Execution cadence (PR/nightly) | ADR-007, `.github/workflows/nightly.yml`, Step 26                          |
-| App test tiers (unit/integ.)   | `demo-shop-app` test/unit + test/integration, Step 27                      |
-| Two-repo contributor flow      | `CONTRIBUTING.md`                                                          |
-| Branch protection / PR gate    | GitHub branch rules, BUILD_LOG Steps 20, 25                                |
-| Build history                  | `docs/BUILD_LOG.md` Steps 1–44                                             |
-| This plan                      | `docs/ROADMAP.md`                                                          |
+| Concept                            | Where                                                                      |
+| ---------------------------------- | -------------------------------------------------------------------------- |
+| Page Object Model                  | `pages/`, ADR-001                                                          |
+| Components vs fixtures             | `components/`, `fixtures/`, ADR-004                                        |
+| Browser strategy (local vs CI)     | `playwright.config.ts`, ADR-002                                            |
+| Code style                         | ESLint/Prettier, ADR-003                                                   |
+| CI pipeline                        | `.github/workflows/ci.yml`                                                 |
+| CD (GitHub Pages)                  | job `deploy-report` in `ci.yml`                                            |
+| Secrets pattern                    | `config/environments.ts`, workflow `env:`                                  |
+| Local secrets (`.env`)             | `.env.example`, `playwright.config.ts` (dotenv)                            |
+| CI run time (Docker fix)           | BUILD_LOG Step 16, Phase 5 (cache tried+reverted)                          |
+| Pre-commit hook (Husky)            | `.husky/pre-commit`, `package.json` lint-staged                            |
+| Node version pinning               | `.nvmrc`, `package.json` engines                                           |
+| Anti-flaky strategy                | ADR-005, `playwright.config.ts` (retries/traces)                           |
+| API tests (`request` fixture)      | `tests/api/`, `api` project, BUILD_LOG Step 24                             |
+| Contract testing (schema)          | `tests/api/contract.api.spec.ts` + OpenAPI, Step 29                        |
+| Authorization matrix (API)         | `tests/api/products.authz.api.spec.ts` + `data/write-ops.ts`, Step 44      |
+| TS practice (guard, generic)       | `utils/product.guard.ts`, `data/product.factory.ts` (`buildMany`), Step 44 |
+| Sharding + merge-reports           | `.github/workflows/ci.yml` matrix, ADR-008, Step 30                        |
+| Compatibility matrix (Node)        | `api` job `matrix.node`, ADR-009, Step 31                                  |
+| CD deploy + post-deploy smoke      | `demo-shop-app` `render.yaml` + `ci.yml`, ADR-010, Step 32                 |
+| Staging→prod + approval gate       | `demo-shop-app` `ci.yml` + GitHub Environments, ADR-012, Step 34           |
+| Cross-repo version pin             | `.app-version` + `ci.yml`/`app:setup`, ADR-013, Step 35                    |
+| Visual regression                  | `tests/visual/`, ADR-011, Step 33                                          |
+| Testing pyramid (API → E2E)        | `.github/workflows/ci.yml`, ADR-006                                        |
+| System Under Test (own app)        | `demo-shop-app` repo, ADR-006, BUILD_LOG Step 23                           |
+| Ephemeral SUT (`webServer`)        | `playwright.config.ts`, `app:setup` script                                 |
+| Cross-repo integration gate        | `demo-shop-app/.github/workflows/e2e.yml`, Step 25                         |
+| Execution cadence (PR/nightly)     | ADR-007, `.github/workflows/nightly.yml`, Step 26                          |
+| App test tiers (unit/integ.)       | `demo-shop-app` test/unit + test/integration, Step 27                      |
+| Two-repo contributor flow          | `CONTRIBUTING.md`                                                          |
+| Branch protection / PR gate        | GitHub branch rules, BUILD_LOG Steps 20, 25                                |
+| AI-assisted testing (judge + heal) | `ai/`, `tests/ai/`, ADR-019, Step 45                                       |
+| Build history                      | `docs/BUILD_LOG.md` Steps 1–45                                             |
+| This plan                          | `docs/ROADMAP.md`                                                          |

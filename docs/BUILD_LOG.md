@@ -2035,6 +2035,45 @@ npx playwright test tests/api/products.authz.api.spec.ts tests/api/products.shap
 - Deriving the union from a `const` array (`(typeof WRITE_METHODS)[number]`) keeps the runtime list and the type in lockstep — the idiomatic alternative to `enum`.
 - A type guard turns an untrusted `unknown` into a typed value with zero casts downstream. Distinct from the Ajv contract test (Step 29): that detects schema _drift_; this gives the test code a typed, trustworthy value.
 
+## Step 45 — AI-assisted testing: LLM-as-judge + self-healing locators (ADR-019)
+
+**Status:** Done
+
+**What**
+
+- A new **opt-in `ai/` module** with two AI-assisted testing techniques, behind a single Gemini seam (`ai/gemini.client.ts` — `@google/genai`, flash model, key read from the environment):
+  - **LLM-as-judge** (`ai/judge.ts`) — `judge(criterion, content)` asserts a _semantic_ property a `toBe` can't express. `tests/ai/product-coherence.ai.spec.ts` judges product title↔description coherence: a real seeded product (expected pass) vs a product created via the real API with a mismatched description (expected fail) — proving the judge _discriminates_. Text-only (the SUT has no product images).
+  - **Self-healing locators** (`ai/self-healing.ts`) — `healLocator()` recovers a broken selector by asking the model for a working one, called **only on the failure path**. `tests/ai/self-healing.ai.spec.ts` starts from a deliberately stale login selector and heals it.
+- **Gating** (never touches the deterministic suite): its own `ai` Playwright project matched by `*.ai.spec.ts` (isolated like `api` / `mobile` / `contract`), included only with `AI_TESTS=1` (`npm run test:ai`); each spec **skips** without `GEMINI_API_KEY`. Separate, manually-triggered CI workflow `.github/workflows/ai.yml` (not a required gate).
+
+**Why**
+
+- Explore "AI-driven testing" — the test process _interacting_ with an LLM — as an **augmentation** layer, learning the technique and, crucially, its trade-off with **determinism**, without a non-deterministic, paid, network call ever entering the merge gate. See [ADR-019](adr/019-ai-assisted-testing-llm-judge-and-self-healing.md).
+
+**Commands**
+
+```bash
+# local — needs GEMINI_API_KEY in .env (skips green without it)
+npm run test:ai            # 3 passed: judge coherent + judge incoherent + self-healing
+
+# CI — on-demand only (workflow_dispatch), uses the GEMINI_API_KEY secret
+gh workflow run ai.yml
+```
+
+**Files**
+
+- `ai/gemini.client.ts`, `ai/judge.ts`, `ai/self-healing.ts`, `ai/README.md` (new)
+- `tests/ai/product-coherence.ai.spec.ts`, `tests/ai/self-healing.ai.spec.ts` (new)
+- `.github/workflows/ai.yml`, `docs/adr/019-ai-assisted-testing-llm-judge-and-self-healing.md` (new)
+- `playwright.config.ts` (`ai` project + `AI_SPECS` ignore), `package.json` (+`test:ai`, +`@google/genai`), `.env.example`, `README.md`, `docs/adr/README.md`
+
+**Learnings**
+
+- **The judge is for meaning, not data.** Price/id stay deterministic (`toBe`); only the fuzzy "does the copy describe the product?" goes to the LLM. Two-sided cases (a pass _and_ a fail) prove it discriminates rather than rubber-stamps.
+- **Self-healing pays only on failure.** The model is consulted just when the primary selector breaks — a healthy run never calls it, so the steady-state cost is ≈ 0.
+- **Determinism is handled by gating, not hope.** A project gate (`AI_TESTS`) + a key skip keep the non-deterministic, paid suite out of the required CI gate entirely.
+- **Free-tier model drift is real:** `gemini-2.0-flash` returned `429 limit: 0` on the AI Studio free tier; `gemini-2.5-flash` worked — hence the `GEMINI_MODEL` override and the 2.5-flash default.
+
 ## Step N — [Title]
 
 **Status:** Done | In progress | Pending

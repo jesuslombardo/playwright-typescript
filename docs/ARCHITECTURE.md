@@ -17,6 +17,7 @@ data/         → scenario test data (factories + datasets) — see ADR-014
 utils/        → non-UI helpers (API helpers, formatters)
 config/       → environment URLs and env-backed credentials
 examples/     → OOP pattern gallery (opt-in study layer) — see ADR-018
+ai/           → AI-assisted testing helpers (opt-in) — see ADR-019
 app/          → the System Under Test, cloned in (gitignored) — see SUT below
 ```
 
@@ -29,7 +30,8 @@ playwright-typescript/
 │   ├── auth/               # login, logout (E2E)
 │   ├── products/           # product list, create/delete (E2E)
 │   ├── visual/             # visual regression baseline (E2E, @visual)
-│   └── mobile/             # responsive/touch on an emulated device (*.mobile.spec.ts)
+│   ├── mobile/             # responsive/touch on an emulated device (*.mobile.spec.ts)
+│   └── ai/                 # LLM-as-judge + self-healing (opt-in, *.ai.spec.ts) — ADR-019
 ├── pages/                  # Page Objects — one class per screen
 │   ├── login.page.ts
 │   └── products.page.ts
@@ -40,6 +42,7 @@ playwright-typescript/
 │   ├── products.dataset.ts # reference seed data + data-driven create cases
 │   └── auth.dataset.ts     # data-driven login cases
 ├── utils/                  # Generic helpers (no DOM) — e.g. API token helper
+├── ai/                     # AI-assisted testing (opt-in): judge + self-healing — ADR-019
 ├── config/                 # Environment + env-backed credentials
 ├── docs/
 │   ├── ARCHITECTURE.md     # This file — current design
@@ -113,6 +116,21 @@ See [ADR-014](adr/014-test-data-layer.md) and [`data/README.md`](../data/README.
   mapped to the file that shows it, plus an interview-defense cheat sheet.
 - Guiding rule: **a pattern must earn its place** — see
   [ADR-018](adr/018-oop-patterns-and-principles-layer.md).
+
+### AI-assisted testing (opt-in study layer)
+
+- An **additive, gated** layer ([`ai/`](../ai/)) demonstrating two AI-assisted
+  techniques as an _augmentation_ to the deterministic suite, never inside it:
+  **LLM-as-judge** (`ai/judge.ts`, semantic assertions a `toBe` can't express) and
+  **self-healing locators** (`ai/self-healing.ts`, recover a broken selector via the
+  model — only on the failure path). Both reach the LLM through one seam,
+  `ai/gemini.client.ts`.
+- Isolated like the other non-E2E layers: a dedicated `ai` Playwright project matched
+  by `*.ai.spec.ts`, opt-in via `AI_TESTS=1` (`npm run test:ai`), and each spec skips
+  without `GEMINI_API_KEY`. CI runs it only through a separate, manual workflow.
+- Guiding rule (as with the OOP layer): it **earns its place** by staying out of the
+  gate — the determinism trade-off is handled by gating, not hope. See
+  [ADR-019](adr/019-ai-assisted-testing-llm-judge-and-self-healing.md).
 
 ## Where does this code go?
 
@@ -231,6 +249,7 @@ quality → api → smoke → regression → deploy-report (CD)
 - [ADR-005: Anti-flaky test strategy](adr/005-anti-flaky-test-strategy.md)
 - [ADR-006: Custom SUT + testing pyramid](adr/006-custom-sut-and-testing-pyramid.md)
 - [OOP patterns catalogue](patterns/README.md) · [OOP principles map](oop-principles/README.md) — study layer ([ADR-018](adr/018-oop-patterns-and-principles-layer.md))
+- [ADR-019: AI-assisted testing](adr/019-ai-assisted-testing-llm-judge-and-self-healing.md) — LLM-as-judge & self-healing (opt-in)
 
 ## Evolution
 
