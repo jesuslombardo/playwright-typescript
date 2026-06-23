@@ -43,8 +43,11 @@ const browserProjects =
     ? crossBrowserProjects
     : [browserProject('chromium', 'Desktop Chrome')]
 
-/* Always on (it's tiny). Add e.g. mobileProject('mobile-chrome', 'Pixel 7'). */
-const mobileProjects = [mobileProject('mobile-safari', 'iPhone 13')]
+/* Always on (it's tiny). Both mobile engines: iOS Safari + Android Chrome. */
+const mobileProjects = [
+  mobileProject('mobile-safari', 'iPhone 13'), // WebKit ≈ iOS Safari
+  mobileProject('mobile-chrome', 'Pixel 7'), // Chromium ≈ Android Chrome
+]
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -78,7 +81,7 @@ export default defineConfig({
   /*
    * api      → browserless request-fixture tests (the pyramid's base).
    * browsers → desktop E2E. Local: Chromium only (fast). CI / CROSS_BROWSER: all three.
-   * mobile   → emulated-device E2E (iPhone/WebKit). Runs only *.mobile.spec.ts.
+   * mobile   → emulated-device E2E (iPhone/WebKit + Pixel/Chromium). Runs only *.mobile.spec.ts.
    */
   projects: [apiProject, ...browserProjects, ...mobileProjects],
 
