@@ -1678,6 +1678,49 @@ git -C app describe --tags  # -> v1.0.0   (verified)
 
 ---
 
+## Step 36 — Test data layer (`data/`): factories, datasets, lifecycle
+
+**Status:** Done
+
+**What**
+
+- Introduced a dedicated **`data/` layer** for scenario test data, with three industry patterns:
+  - **Factory** — `data/product.factory.ts` `buildProduct(overrides)`: unique, **faker**-generated products with readable overrides. Replaces `utils/data-generator.ts`.
+  - **Datasets (data-driven)** — `data/products.dataset.ts` (create cases) + `data/auth.dataset.ts` (login cases). Each row carries its **expected outcome** and is driven through a `for…of` loop → one row = one test.
+  - **Lifecycle fixture** — `fixtures/product.fixture.ts` `apiProduct`: creates a product over the API and **deletes it after the test (even on failure)**; `fixtures/shop.fixture.ts` composes it with the auth fixture via `mergeTests`.
+- **config/data split**: moved `testProducts` → `data/products.dataset.ts` (`seededProducts`); `testUsers` **stays** in `config/` (env-backed credentials). Added `utils/api.ts` `getToken()` (dedupes the login helper across specs + fixture).
+- New specs: `tests/api/products.data.api.spec.ts` (8 create cases + lifecycle), `tests/api/login.data.api.spec.ts` (4 login cases), `tests/products/products.data.spec.ts` (E2E "set up via API, assert via UI"). Refactored existing API/E2E specs onto the factory. Decision + trade-offs in **[ADR-014](adr/014-test-data-layer.md)** and **[`data/README.md`](../data/README.md)**.
+
+**Why**
+
+- Test data was scattered across **three places** (inline literals, `config/`, a lone generator) — fine for 6 tests, painful as the suite grows (duplication, parallel-run name collisions, no structure for negative/boundary cases).
+- A data layer gives one home, **parallel-safe** unique data, **data-driven** scaling (add a row, not a test), and **isolation** (guaranteed cleanup). Faker = **PII-safe synthetic data**, the industry default over real records.
+
+**Commands**
+
+```bash
+npm install -D @faker-js/faker     # synthetic data generator
+npx tsc --noEmit                    # types green
+npx playwright test                 # 31 passed (was ~17) — data-driven added 14 cases
+```
+
+**Files**
+
+- `data/product.factory.ts`, `data/products.dataset.ts`, `data/auth.dataset.ts`, `data/README.md`
+- `fixtures/product.fixture.ts`, `fixtures/shop.fixture.ts`, `utils/api.ts`
+- `tests/api/products.data.api.spec.ts`, `tests/api/login.data.api.spec.ts`, `tests/products/products.data.spec.ts`
+- Refactored: `tests/api/products.api.spec.ts`, `tests/products/products.spec.ts`, `pages/products.page.ts`, `config/environments.ts`; **removed** `utils/data-generator.ts`
+- `package.json` (faker), `docs/adr/014-…md`, `docs/adr/README.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`
+
+**Learnings**
+
+- **`config/` = environment, `data/` = scenarios** — separating the _where_ from the _what_ is the core rule; env-backed credentials are the one nuance that stays in config.
+- **Factory for created data, dataset for known cases** — factories give uniqueness (parallel-safe), datasets give named, data-driven coverage that scales by rows.
+- **Keep `expectedStatus` honest** — asserting what the app _actually_ does (negative price → 201) turned the dataset into live docs and surfaced a real validation gap.
+- **A lifecycle fixture beats manual create/delete** — teardown runs even on failure, so tests never leak state; it also unlocks "set up via API, assert via UI".
+
+---
+
 ```markdown
 ## Step N — [Title]
 

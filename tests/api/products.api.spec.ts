@@ -1,15 +1,10 @@
-import { test, expect, APIRequestContext } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { testUsers } from '../../config/environments'
+import { getToken } from '../../utils/api'
+import { buildProduct } from '../../data/product.factory'
+import { seededProducts } from '../../data/products.dataset'
 
 const SEED_COUNT = 6
-
-async function getToken(request: APIRequestContext): Promise<string> {
-  const res = await request.post('/api/login', {
-    data: { username: testUsers.standard.username, password: testUsers.standard.password },
-  })
-  expect(res.ok()).toBeTruthy()
-  return (await res.json()).token
-}
 
 /*
  * API layer of the testing pyramid (@api). Fast, browserless checks via the
@@ -44,7 +39,7 @@ test.describe('Products API @api', () => {
     const products = await res.json()
     expect(Array.isArray(products)).toBeTruthy()
     expect(products.length).toBeGreaterThanOrEqual(SEED_COUNT)
-    expect(products.map((p: { name: string }) => p.name)).toContain('Sauce Labs Backpack')
+    expect(products.map((p: { name: string }) => p.name)).toContain(seededProducts.backpack.name)
   })
 
   test('GET /api/products/:id returns 404 for an unknown id', async ({ request }) => {
@@ -57,27 +52,18 @@ test.describe('Products API @api', () => {
     expect(res.status()).toBe(401)
   })
 
-  test('POST /api/products validates the payload', async ({ request }) => {
-    const token = await getToken(request)
-    const res = await request.post('/api/products', {
-      headers: { Authorization: `Bearer ${token}` },
-      data: { name: '', price: 'free' },
-    })
-    expect(res.status()).toBe(400)
-  })
+  // Payload validation is covered exhaustively in products.data.api.spec.ts.
 
   test('authenticated user can create, read, update and delete a product', async ({ request }) => {
     const token = await getToken(request)
     const headers = { Authorization: `Bearer ${token}` }
+    const product = buildProduct()
 
     // create
-    const createRes = await request.post('/api/products', {
-      headers,
-      data: { name: 'API Test Widget', price: 12.5, description: 'created by an API test' },
-    })
+    const createRes = await request.post('/api/products', { headers, data: product })
     expect(createRes.status()).toBe(201)
     const created = await createRes.json()
-    expect(created).toMatchObject({ name: 'API Test Widget', price: 12.5 })
+    expect(created).toMatchObject({ name: product.name, price: product.price })
 
     // read
     const getRes = await request.get(`/api/products/${created.id}`)

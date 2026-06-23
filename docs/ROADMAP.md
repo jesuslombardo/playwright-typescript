@@ -10,12 +10,12 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Priority order (what to build next)
 
-| Order | Phase / topic                           | Why this order                                 |
-| ----- | --------------------------------------- | ---------------------------------------------- |
-| **1** | ~~**Phase 4 — CI/CD**~~                 | ✅ Complete — CI + CD MVP (GitHub Pages)       |
-| **2** | **Phase 3 — Hooks + reporting**         | Local quality + richer reports; complements CI |
-| **3** | **Data layer (`data/`)**                | When test data volume becomes painful          |
-| **4** | **Phase 5 — Tags, sharding, hardening** | Optimization once the suite grows              |
+| Order     | Phase / topic                           | Why this order                                                    |
+| --------- | --------------------------------------- | ----------------------------------------------------------------- |
+| **1**     | ~~**Phase 4 — CI/CD**~~                 | ✅ Complete — CI + CD MVP (GitHub Pages)                          |
+| **2**     | **Phase 3 — Hooks + reporting**         | Local quality + richer reports; complements CI                    |
+| ~~**3**~~ | ~~**Data layer (`data/`)**~~            | ✅ Complete — factories + datasets + lifecycle (Step 36, ADR-014) |
+| **4**     | **Phase 5 — Tags, sharding, hardening** | Optimization once the suite grows                                 |
 
 > **Learning rule:** one concept per session — explain → implement → document in BUILD_LOG.
 
@@ -28,7 +28,7 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 2   Automation (6 E2E, POM, fixtures, 4 ADRs)
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
 🟡 Phase 3   Hooks ✅ (Husky) + anti-flaky ✅ (ADR-005) · reporting 💤 NTH
-⬜ data/     Structured test data layer
+✅ data/     Test data layer (factories + datasets + lifecycle, ADR-014)
 🟡 Phase 5   Docker ✅ · tags ✅ · pyramid ✅ · sharding ✅ · matrix ✅ · CD ✅ · visual ✅ · staging→prod gate ✅ · app pin ✅
 ```
 
@@ -114,14 +114,21 @@ Next **large** phase.
 
 ---
 
-## Data layer — `data/` (when it hurts)
+## Data layer — `data/` ✅ (Step 36, ADR-014)
 
-Introduce when static config in `config/` is not enough.
+Built out the `data/` layer once inline literals + `config/` were no longer enough.
 
-| Item                      | Purpose                                             |
-| ------------------------- | --------------------------------------------------- |
-| `data/` folder            | JSON/CSV/fixtures for complex or many test datasets |
-| Separation from `config/` | Config = env/URLs; data = scenarios                 |
+| Item                      | Purpose                                           | Status |
+| ------------------------- | ------------------------------------------------- | ------ |
+| `data/` folder            | Home for scenario data, separate from `config/`   | ✅     |
+| Separation from `config/` | Config = env/URLs; data = scenarios               | ✅     |
+| Factory (`buildProduct`)  | Unique, faker-based synthetic data with overrides | ✅     |
+| Datasets (data-driven)    | Create + login cases — one row = one test         | ✅     |
+| Lifecycle fixture         | `apiProduct` seeds via API + auto-cleans up       | ✅     |
+
+**Possible next (NTH):** JSON/CSV datasets (the non-coder-friendly alternative —
+`resolveJsonModule` is already on), more entities/factories, a faker seed for
+reproducible random data, or larger-volume data generation for perf tests.
 
 ---
 
