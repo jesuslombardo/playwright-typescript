@@ -1994,7 +1994,47 @@ PACT_DIR="/path/to/playwright-typescript/pacts" npm run test:contract # Verifica
 
 ---
 
-```markdown
+````markdown
+## Step 44 — TypeScript practice layer: authz matrix + response-shape guard + factory generic
+
+**Status:** Done
+
+**What**
+
+- Two small **API suites** added as a hands-on TypeScript-basics layer (a language sibling to the OOP study layer, ADR-018) — both real coverage, no toy code:
+  - `tests/api/products.authz.api.spec.ts` + `data/write-ops.ts` — an **authorization matrix**: every write endpoint (POST/PUT/DELETE) rejects a request with no token and with a malformed token (401), plus a positive anchor. A new axis: _who_ may write, not _what_ they write.
+  - `tests/api/products.shape.api.spec.ts` + `utils/product.guard.ts` — a **type guard** (`isApiProduct(x): x is ApiProduct`) that narrows the `unknown` returned by `response.json()` before asserting catalogue invariants.
+  - `tests/api/products.bulk.api.spec.ts` — exercises a new `buildMany<T>` generic on the factory (bulk create + `try/finally` cleanup).
+- Refactor: moved `ApiProduct` to `data/product.factory.ts` (next to `Product`) and imported it from the fixture — no duplicate type.
+
+**Why**
+
+- The user wanted to practice **basic** TypeScript organically, inside real tests, rather than as isolated katas or advanced type gymnastics. Each suite was chosen so a TS concept appears because the problem needs it:
+  - literal-union (`WriteMethod`) + optional `?` + indexing a method union → authz `write-ops`.
+  - `unknown` + user-defined type guard + narrowing (`.filter(guard)`) + `?.`/`??` → response-shape suite.
+  - writing your own generic (`buildMany<T>`) + `as const` array → union (the modern `enum` alternative) → factory + write-ops.
+
+**Commands**
+
+```bash
+npx tsc --noEmit
+npx playwright test tests/api/products.authz.api.spec.ts tests/api/products.shape.api.spec.ts tests/api/products.bulk.api.spec.ts --project=api
+```
+````
+
+**Files**
+
+- `data/write-ops.ts`, `utils/product.guard.ts` (new)
+- `tests/api/products.authz.api.spec.ts`, `products.shape.api.spec.ts`, `products.bulk.api.spec.ts` (new)
+- `data/product.factory.ts` (+`ApiProduct`, +`buildMany<T>`), `fixtures/product.fixture.ts` (import `ApiProduct`)
+- `data/README.md`, `docs/ROADMAP.md` (concept-map rows)
+
+**Learnings**
+
+- A literal-union method (`'post' | 'put' | 'delete'`) is what makes `request[op.method](...)` type-check — widen it to `string` and TS can't prove it's a real method. The union earns its keep.
+- Deriving the union from a `const` array (`(typeof WRITE_METHODS)[number]`) keeps the runtime list and the type in lockstep — the idiomatic alternative to `enum`.
+- A type guard turns an untrusted `unknown` into a typed value with zero casts downstream. Distinct from the Ajv contract test (Step 29): that detects schema _drift_; this gives the test code a typed, trustworthy value.
+
 ## Step N — [Title]
 
 **Status:** Done | In progress | Pending
@@ -2021,4 +2061,7 @@ PACT_DIR="/path/to/playwright-typescript/pacts" npm run test:contract # Verifica
 **Learnings**
 
 - ...
+
+```
+
 ```

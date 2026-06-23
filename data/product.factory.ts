@@ -8,6 +8,13 @@ export type Product = {
 }
 
 /**
+ * The shape the API RETURNS for a product: the create payload plus the id the
+ * server assigns. `Product` is this same type without the id — i.e. it equals
+ * `Omit<ApiProduct, 'id'>` — which is exactly why we build on `Product` here.
+ */
+export type ApiProduct = Product & { id: number }
+
+/**
  * Factory for a Product.
  *
  * Returns a fully-formed, UNIQUE product by default and lets a test pin any
@@ -27,4 +34,16 @@ export function buildProduct(overrides: Partial<Product> = {}): Product {
     description: faker.commerce.productDescription(),
     ...overrides,
   }
+}
+
+/**
+ * Build an array of `count` items from any factory — a tiny GENERIC helper.
+ *
+ * The `<T>` makes it reusable: it builds Products today (`buildMany(buildProduct,
+ * 3)`) and anything else tomorrow, with the return type `T[]` inferred from
+ * whatever the factory returns — no casts. `buildProduct` fits the `() => T`
+ * slot because its `overrides` parameter is optional.
+ */
+export function buildMany<T>(factory: () => T, count: number): T[] {
+  return Array.from({ length: count }, () => factory())
 }
