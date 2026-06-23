@@ -1,0 +1,64 @@
+name: AI suite (opt-in)
+
+# ── On-demand only ─────────────────────────────────────────────────────────────
+# The @ai suite (LLM-as-judge + self-healing) calls the Gemini API: it costs money
+# and is non-deterministic, so it is kept OUT of the required CI pipeline (ci.yml)
+# by design. Trigger it manually from the Actions tab. See ADR-019.
+#
+# It needs the GEMINI_API_KEY repository secret. If that secret is absent (e.g. a
+# fork), the specs SKIP and the job still passes green.
+on:
+  workflow_dispatch:
+
+jobs:
+  ai:
+    name: AI tests (LLM-as-judge + self-healing)
+    runs-on: ubuntu-latest
+    # Reuse the official Playwright image (ships the browsers) like smoke/regression.
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-jammy
+      options: --user 1001
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout testing repository
+        uses: actions/checkout@v6
+
+      # Cross-repo version pin: test against the FIXED app tag (.app-version). See ADR-013.
+      - name: Resolve pinned app version
+        run: echo "APP_VERSION=$(tr -d '[:space:]' < .app-version)" >> "$GITHUB_ENV"
+
+      - name: Checkout demo-shop-app (System Under Test) at pinned version
+        uses: actions/checkout@v6
+        with:
+          repository: jesuslombardo/demo-shop-app
+          ref: ${{ env.APP_VERSION }}
+          path: app
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install testing dependencies
+        run: npm ci
+
+      - name: Install app dependencies
+        run: npm ci
+        working-directory: app
+
+      - name: Run the AI suite
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: npm run test:ai
+
+      - name: Upload AI debug bundle on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-debug
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

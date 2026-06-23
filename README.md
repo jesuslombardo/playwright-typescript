@@ -132,6 +132,7 @@ smoke-tested again. Live: [staging](https://demo-shop-app-staging.onrender.com) 
 - [x] **CD: staging → production promotion** with a manual approval gate (GitHub Environments) (Step 34, ADR-012)
 - [x] **Cross-repo version pinning** — test against a fixed app tag (`.app-version`), not `@main` (Step 35, ADR-013)
 - [x] **Mobile mini-suite** — iPhone 13 (WebKit) + Pixel 7 (Chromium) emulation: hamburger + 1-column layout, isolated like `api` (Step 39 + 41, ADR-015)
+- [x] **AI-assisted testing (opt-in)** — LLM-as-judge (semantic coherence) + self-healing locators via Gemini, in a gated [`ai/`](ai/) module that never touches the deterministic suite ([ADR-019](docs/adr/019-ai-assisted-testing-llm-judge-and-self-healing.md))
 
 **Phase 3 — Quality & Reporting** (core complete)
 
