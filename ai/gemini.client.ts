@@ -16,7 +16,7 @@ import { GoogleGenAI } from '@google/genai'
  */
 
 /** Free-tier-friendly default; override with GEMINI_MODEL if your tier differs. */
-const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash'
+const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 /**
  * True only when a Gemini key is present. The whole `@ai` suite gates on this so
