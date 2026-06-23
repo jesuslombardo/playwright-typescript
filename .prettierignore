@@ -4,3 +4,6 @@ test-results
 blob-report
 package-lock.json
 app
+
+# Prettier has no CSV parser — keep data fixtures as-is
+*.csv

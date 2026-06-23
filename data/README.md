@@ -8,11 +8,13 @@ environment, env-backed credentials).
 
 ## What lives here
 
-| File                  | Kind                | Simulates (industry situation)                         |
-| --------------------- | ------------------- | ------------------------------------------------------ |
-| `product.factory.ts`  | **Factory/builder** | Dynamic, unique, synthetic data (faker) with overrides |
-| `products.dataset.ts` | **Fixtures**        | Reference seed data + data-driven create cases         |
-| `auth.dataset.ts`     | **Fixtures**        | Data-driven login cases (valid / invalid)              |
+| File                  | Kind                  | Simulates (industry situation)                         |
+| --------------------- | --------------------- | ------------------------------------------------------ |
+| `product.factory.ts`  | **Factory/builder**   | Dynamic, unique, synthetic data (faker) with overrides |
+| `products.dataset.ts` | **Fixtures (TS)**     | Reference seed data + data-driven create cases         |
+| `auth.dataset.ts`     | **Fixtures (TS)**     | Data-driven login cases (valid / invalid)              |
+| `login.cases.csv`     | **External fixtures** | Data-driven login matrix in a spreadsheet-friendly CSV |
+| `login.cases.ts`      | **CSV loader**        | Parses the CSV into typed cases (`csv-parse`)          |
 
 ## Factory vs fixture — when to use which
 
@@ -30,6 +32,21 @@ case is adding a row — **the suite scales by data, not by copy-pasted tests**.
 `expectedStatus` always reflects the app's **real** behaviour (e.g. negative
 prices are _accepted_ — the app has no guard), so the table doubles as live
 documentation of what the API actually does.
+
+### Where the rows live: TS vs CSV/JSON
+
+The same pattern works from different **source formats** — pick by who edits it:
+
+- **TypeScript dataset** (`*.dataset.ts`) — type-safe, can mix literals with code
+  (e.g. call the factory inline). Edited by a developer. The default here.
+- **External file (CSV/JSON)** — pure data a **non-developer** can edit in a
+  spreadsheet, the classic "here's a CSV of cases" hand-off. `login.cases.csv`
+  (loaded by `login.cases.ts` via `csv-parse`) drives a login matrix this way.
+  JSON is the zero-dependency sibling (`import cases from './x.json'`, since
+  `resolveJsonModule` is on) — add it the same way when you prefer JSON.
+
+Trade-off: TS gives types + inline code; CSV/JSON gives editability for
+non-coders but only static scalar values (no faker, no expressions).
 
 ## Lifecycle & cleanup
 
