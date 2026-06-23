@@ -18,6 +18,7 @@ An [Architecture Decision Record](https://adr.github.io/) captures an important 
 | [010](010-deploy-to-environment-and-post-deploy-smoke.md) | Deploy to a live environment + post-deploy smoke | Accepted |
 | [011](011-visual-regression-baseline-strategy.md)         | Visual regression — baseline strategy            | Accepted |
 | [012](012-staging-production-promotion-gate.md)           | Staging → production promotion + approval gate   | Accepted |
+| [013](013-cross-repo-version-pinning.md)                  | Cross-repo version pinning (fixed app tag)       | Accepted |
 
 ## When to add a new ADR
 

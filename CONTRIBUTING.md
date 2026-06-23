@@ -57,23 +57,30 @@ git push -u origin feat/my-change
 # open a PR; the pyramid runs and gates the merge
 ```
 
-CI checks out `demo-shop-app` **@ main** on its own and starts it ephemerally —
-you don't touch the app.
+CI checks out `demo-shop-app` **at the pinned tag** (`.app-version`, not `@main`)
+and starts it ephemerally — you don't touch the app. See
+[ADR-013](docs/adr/013-cross-repo-version-pinning.md).
 
 ### Changing the app too (the cross-repo rule) ⚠️
 
-If a test depends on an app change, **merge the app first**, because this repo's
-CI always runs against `demo-shop-app` **@ main**:
+CI runs against a **pinned app version** (`.app-version`), so a new app change is
+adopted **on purpose**:
 
 1. PR in `demo-shop-app` → merge to its `main`.
-2. PR here with the new/updated test → its CI now sees the app change.
+2. **Tag a release** there: `git tag -a vX.Y.Z -m "…" && git push origin vX.Y.Z`.
+3. PR here that **bumps `.app-version` to `vX.Y.Z`** (alongside the new/updated
+   test) → CI now runs against the new app version.
 
-To validate an app branch **before** merging it, point your local `./app` at it:
+To validate an app branch/tag **before** bumping the pin, point your local `./app`
+at it (note: `npm run app:setup` re-clones the pinned tag, so do this after):
 
 ```bash
-cd app && git fetch origin && git checkout <app-branch> && cd ..
+cd app && git fetch --tags origin && git checkout <app-branch-or-tag> && cd ..
 npm run test:regression
 ```
+
+> The **nightly** deliberately runs against `demo-shop-app@main` (not the pin) as a
+> drift detector: if it fails while pinned CI is green, the pin is behind — bump it.
 
 ## Cross-repo integration check
 

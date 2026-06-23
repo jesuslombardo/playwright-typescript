@@ -1639,6 +1639,45 @@ gh api -X PUT repos/.../environments/production --input -   # reviewers:[{type:U
 
 ---
 
+## Step 35 — Cross-repo version pinning (test against a fixed app tag)
+
+**Status:** Done
+
+**What**
+
+- The suite used to check out the app at **`@main`** (a moving target). Now it tests against a **pinned tag**: tagged the app **`v1.0.0`**; added **`.app-version`** (repo root) as the single source of truth.
+- **CI** (`api`/`smoke`/`regression`) reads `.app-version` and checks the app out at that `ref`. **`app:setup`** clones the same tag locally.
+- **Bumping = a deliberate PR** editing `.app-version`. **Nightly stays `@main`** on purpose (a drift detector). Decision + trade-offs in **[ADR-013](adr/013-cross-repo-version-pinning.md)**.
+
+**Why**
+
+- `@main` = **non-reproducible**: an unrelated app merge could turn this repo's CI red at a random time. Pinning makes builds **reproducible** and upgrades **deliberate** — same idea as a dependency lockfile (`latest` vs `1.0.0`).
+
+**Commands**
+
+```bash
+# tag the app (in demo-shop-app)
+git tag -a v1.0.0 -m "v1.0.0" && git push origin v1.0.0
+# the pin (in this repo)
+cat .app-version            # -> v1.0.0
+npm run app:setup           # clones the app at v1.0.0
+git -C app describe --tags  # -> v1.0.0   (verified)
+```
+
+**Files**
+
+- `.app-version`, `.github/workflows/ci.yml` (3 jobs: resolve + `ref:`), `package.json` (`app:setup`), `.github/workflows/nightly.yml` (kept `@main` w/ comment)
+- `docs/adr/013-…md`, CONTRIBUTING
+
+**Learnings**
+
+- **Pin across repos like you pin dependencies** — a moving `@main` is a non-reproducible build waiting to bite.
+- Keep one **source of truth** (`.app-version`) read by both CI and local setup, so they never diverge.
+- **Pinned for PR/push (reproducible) + `@main` for nightly (drift detection)** is the best of both — the nightly tells you when the pin is behind.
+- Adopting a new version becomes a **reviewable one-line diff**, not a silent surprise.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
