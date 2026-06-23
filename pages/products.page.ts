@@ -10,6 +10,8 @@ export class ProductsPage {
   readonly title: Locator
   readonly items: Locator
   readonly logoutButton: Locator
+  readonly menuToggle: Locator
+  readonly topbarNav: Locator
   readonly newProductName: Locator
   readonly newProductPrice: Locator
   readonly newProductDescription: Locator
@@ -21,6 +23,8 @@ export class ProductsPage {
     this.title = page.getByTestId('title')
     this.items = page.getByTestId('inventory-item')
     this.logoutButton = page.getByTestId('logout')
+    this.menuToggle = page.getByTestId('menu-toggle')
+    this.topbarNav = page.getByTestId('topbar-nav')
     this.newProductName = page.getByTestId('new-product-name')
     this.newProductPrice = page.getByTestId('new-product-price')
     this.newProductDescription = page.getByTestId('new-product-description')
@@ -50,5 +54,13 @@ export class ProductsPage {
 
   async logout() {
     await this.logoutButton.click()
+  }
+
+  /**
+   * Mobile only: reveal the top-bar actions tucked behind the ☰ button.
+   * Uses a touch tap (requires a hasTouch context, e.g. the mobile project).
+   */
+  async openMobileMenu() {
+    await this.menuToggle.tap()
   }
 }
