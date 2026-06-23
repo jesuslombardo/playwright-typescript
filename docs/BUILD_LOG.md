@@ -1842,6 +1842,40 @@ npx playwright test                            # 42 passed (api + chromium + mob
 
 ---
 
+## Step 40 — JSON data-driven (PUT / update matrix)
+
+**Status:** Done
+
+**What**
+
+- Added a **JSON-sourced** data-driven **PUT (update)** matrix — the zero-dep sibling of the CSV step. `data/product-updates.cases.json` (the data) + `data/product-updates.cases.ts` (loads it with a plain `import rawCases from './…json'` — **no parser**, since `resolveJsonModule` is on — typed as `ProductUpdateCase[]`) + `tests/api/products.update.api.spec.ts` (6 rows → 6 tests, `@api`).
+- Each case mutates **its own fresh product** via the `apiProduct` lifecycle fixture (created + auto-deleted per test) → fully isolated. Covers **PUT**, where the earlier data-driven specs covered POST (create).
+
+**Why**
+
+- Completes the data layer's source-format trio — **TS / CSV / JSON** — and shows the choice is about **data shape**, not just who edits it: PUT is a _partial_ update, and JSON expresses partial objects + **explicit `null`** naturally, which CSV's flat scalars can't.
+- `expectedStatus` stays **honest** (ADR-014): `null` price → **200** because the app keeps the existing value (`body.x ?? existing.x`); `price: "free"` and empty `name` → **400**. Verified against the pinned app.
+
+**Commands**
+
+```bash
+npx playwright test tests/api/products.update.api.spec.ts --project=api   # 6 passed
+npm run test:api                                                          # 38 passed (was 32)
+```
+
+**Files**
+
+- `data/product-updates.cases.json`, `data/product-updates.cases.ts`, `tests/api/products.update.api.spec.ts`
+- `data/README.md` (rows for the two new files + a CSV-vs-JSON section), `docs/ROADMAP.md`
+
+**Learnings**
+
+- **JSON vs CSV is a data-shape call, not just an editor call** — CSV = flat scalars (good for a login matrix); JSON = nested + explicit `null` (good for a partial PUT). Both drive the same `for…of` loop.
+- **JSON is zero-dependency** — `resolveJsonModule` lets you `import` it directly; CSV needed `csv-parse`.
+- **Reused the lifecycle fixture** — each PUT mutates a throwaway product the fixture creates and deletes, so the update cases never collide or leak state.
+
+---
+
 ```markdown
 ## Step N — [Title]
 
