@@ -183,6 +183,19 @@ docker run --rm -v "$PWD":/work -w /work \
 Then run it again **without** `--update-snapshots` (still in the image) to confirm
 it's deterministic, and commit the updated PNG.
 
+## Test data
+
+Scenario data lives in **`data/`**, separate from `config/` (environment + env-backed
+credentials). See [`data/README.md`](data/README.md) and [ADR-014](docs/adr/014-test-data-layer.md).
+
+- **Need unique data your test creates?** Use the factory:
+  `buildProduct({ price: 0 })` — faker fills the rest, uniqueness is guaranteed.
+- **Adding a validation/login case?** Add a row to `data/products.dataset.ts` or
+  `data/auth.dataset.ts` (with its `expectedStatus`) — it becomes a test automatically.
+  Keep `expectedStatus` matching the app's **real** behaviour.
+- **Need a pre-existing entity?** Use the `apiProduct` fixture
+  (`fixtures/product.fixture.ts`) — it creates via API and cleans up after, even on failure.
+
 ## Conventions
 
 - **Language:** all code, comments, commit messages and docs are written in

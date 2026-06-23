@@ -1,5 +1,5 @@
 import { Locator, Page } from '@playwright/test'
-import { NewProduct } from '../utils/data-generator'
+import { Product } from '../data/product.factory'
 
 /**
  * The authenticated catalogue page of demo-shop-app: lists products and lets a
@@ -37,7 +37,7 @@ export class ProductsPage {
     return this.items.filter({ hasText: name })
   }
 
-  async addProduct({ name, price, description }: NewProduct) {
+  async addProduct({ name, price, description }: Product) {
     await this.newProductName.fill(name)
     await this.newProductPrice.fill(String(price))
     await this.newProductDescription.fill(description)

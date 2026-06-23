@@ -26,8 +26,4 @@ export const testUsers = {
   },
 } as const
 
-export const testProducts = {
-  backpack: {
-    name: 'Sauce Labs Backpack',
-  },
-} as const
+// Scenario data (products, login cases, factories) lives in data/ — see data/README.md.

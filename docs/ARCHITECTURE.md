@@ -13,8 +13,9 @@ tests/        → what we validate (API + E2E scenarios)
 pages/        → how we interact with screens (Page Object Model)
 components/   → shared UI pieces (header, modals, toasts)
 fixtures/     → test setup and dependency injection (Playwright)
-utils/        → non-UI helpers (data generators, formatters)
-config/       → environment URLs, credentials, test data
+data/         → scenario test data (factories + datasets) — see ADR-014
+utils/        → non-UI helpers (API helpers, formatters)
+config/       → environment URLs and env-backed credentials
 app/          → the System Under Test, cloned in (gitignored) — see SUT below
 ```
 
@@ -30,9 +31,13 @@ playwright-typescript/
 │   ├── login.page.ts
 │   └── products.page.ts
 ├── components/             # Component Objects — shared UI across pages (reserved)
-├── fixtures/               # Custom Playwright fixtures
-├── utils/                  # Generic helpers (no DOM)
-├── config/                 # Environment and test data config
+├── fixtures/               # Custom Playwright fixtures (auth, product lifecycle)
+├── data/                   # Test data layer — factories + datasets (ADR-014)
+│   ├── product.factory.ts  # faker-based builder for unique products
+│   ├── products.dataset.ts # reference seed data + data-driven create cases
+│   └── auth.dataset.ts     # data-driven login cases
+├── utils/                  # Generic helpers (no DOM) — e.g. API token helper
+├── config/                 # Environment + env-backed credentials
 ├── docs/
 │   ├── ARCHITECTURE.md     # This file — current design
 │   ├── BUILD_LOG.md        # Step-by-step build journal
@@ -50,9 +55,10 @@ playwright-typescript/
 | `tests/`      | Scenarios and assertions               | Via page objects only | `user can login with valid credentials` |
 | `pages/`      | Screen-specific locators and actions   | Yes                   | `LoginPage.login(user, pass)`           |
 | `components/` | Reusable UI blocks on multiple screens | Yes                   | `HeaderComponent.logout()`              |
-| `fixtures/`   | Test setup, teardown, injected state   | No (orchestrates)     | `loggedInPage` fixture                  |
-| `utils/`      | Pure helpers                           | No                    | `generateRandomEmail()`                 |
-| `config/`     | URLs, env vars, static test data       | No                    | `baseURL` per environment               |
+| `fixtures/`   | Test setup, teardown, injected state   | No (orchestrates)     | `loggedInPage`, `apiProduct` fixtures   |
+| `data/`       | Scenario data — factories + datasets   | No                    | `buildProduct({ price: 0 })`            |
+| `utils/`      | Pure helpers                           | No                    | `getToken(request)`                     |
+| `config/`     | URLs, env vars, env-backed credentials | No                    | `baseURL` per environment               |
 
 ## Patterns
 
@@ -77,6 +83,20 @@ playwright-typescript/
 
 See [ADR-004](adr/004-components-vs-fixtures.md) for the full decision guide, anti-patterns, and examples.
 
+### Test data
+
+- **`config/` = environment, `data/` = scenarios.** URLs and env-backed
+  credentials stay in `config/`; products, login cases and other scenario data
+  live in `data/`.
+- **Factory** (`buildProduct`) for unique, synthetic data a test **creates**;
+  **datasets** for known, named cases driven through a `for…of` loop
+  (data-driven testing — the suite scales by data, not copy-pasted tests).
+- **Lifecycle fixture** (`apiProduct`) seeds an entity over the API and deletes
+  it after the test, so tests stay isolated. Also enables "set up via API,
+  assert via UI".
+
+See [ADR-014](adr/014-test-data-layer.md) and [`data/README.md`](../data/README.md).
+
 ## Where does this code go?
 
 Quick reference — use this when unsure:
@@ -86,6 +106,7 @@ Is it a test scenario or assertion?     → tests/
 Is it a full screen (login, products)?  → pages/
 Is it UI shared across screens?         → components/
 Is it repeated test setup/teardown?     → fixtures/
+Is it scenario data (a product, a case)? → data/
 Is it a helper with no browser/DOM?     → utils/
 Is it a URL, env var, or credential?   → config/
 ```
