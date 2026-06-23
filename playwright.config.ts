@@ -12,6 +12,9 @@ const MOBILE_SPECS = /.*\.mobile\.spec\.ts$/
 /** Pact consumer contract specs — browserless, run in their own `contract` project. */
 const CONTRACT_SPECS = /.*\.pact\.spec\.ts$/
 
+/** AI suite (LLM-as-judge + self-healing) — own project, opt-in via AI_TESTS. */
+const AI_SPECS = /.*\.ai\.spec\.ts$/
+
 const apiProject = {
   name: 'api',
   testMatch: API_SPECS,
@@ -27,7 +30,7 @@ const contractProject = {
 const browserProject = (name: string, device: string) => ({
   name,
   use: { ...devices[device] },
-  testIgnore: [API_SPECS, MOBILE_SPECS, CONTRACT_SPECS],
+  testIgnore: [API_SPECS, MOBILE_SPECS, CONTRACT_SPECS, AI_SPECS],
 })
 
 /*
@@ -58,6 +61,20 @@ const mobileProjects = [
   mobileProject('mobile-safari', 'iPhone 13'), // WebKit ≈ iOS Safari
   mobileProject('mobile-chrome', 'Pixel 7'), // Chromium ≈ Android Chrome
 ]
+
+/*
+ * AI suite (opt-in) — LLM-as-judge + self-healing locators. A browser project
+ * (the self-healing spec drives the login UI), matched by *.ai.spec.ts. It is
+ * OFF by default and only included when AI_TESTS is set, so it never runs in the
+ * normal / regression / smoke runs. The specs additionally SKIP without a Gemini
+ * key. Run it with `npm run test:ai`. See ADR-019.
+ */
+const aiProject = {
+  name: 'ai',
+  testMatch: AI_SPECS,
+  use: { ...devices['Desktop Chrome'] },
+}
+const aiProjects = process.env.AI_TESTS ? [aiProject] : []
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -93,7 +110,7 @@ export default defineConfig({
    * browsers → desktop E2E. Local: Chromium only (fast). CI / CROSS_BROWSER: all three.
    * mobile   → emulated-device E2E (iPhone/WebKit + Pixel/Chromium). Runs only *.mobile.spec.ts.
    */
-  projects: [apiProject, contractProject, ...browserProjects, ...mobileProjects],
+  projects: [apiProject, contractProject, ...browserProjects, ...mobileProjects, ...aiProjects],
 
   /*
    * Start the System Under Test before tests run.
