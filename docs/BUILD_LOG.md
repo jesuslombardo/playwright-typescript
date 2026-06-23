@@ -1556,6 +1556,45 @@ curl -fsS https://demo-shop-app-mlkv.onrender.com/health
 
 ---
 
+## Step 33 — Visual regression (one stable test)
+
+**Status:** Done
+
+**What**
+
+- Added a single visual-regression test on the **static login page**: `tests/visual/login.visual.spec.ts` → `await expect(page).toHaveScreenshot('login.png', { maxDiffPixelRatio: 0.02 })`.
+- **Chromium only** (`test.skip(browserName !== 'chromium')`) → one baseline; runs inside `test:regression` (it's not `@api`/`@smoke`). New `test:visual` script.
+- **Baseline generated in the Playwright Docker image** (same as CI) so fonts/anti-aliasing match → not flaky. Committed `login-chromium-linux.png` (1280×720).
+- Decision + trade-offs in **[ADR-011](adr/011-visual-regression-baseline-strategy.md)**.
+
+**Why**
+
+- Visual testing's classic trap: **screenshots are environment-specific** (fonts/anti-aliasing). A baseline made on a laptop fails in CI for reasons unrelated to the UI. Matching the baseline's environment to CI's is what makes it stable.
+
+**Commands**
+
+```bash
+# generate/refresh the baseline in the SAME image CI uses (not on a laptop!)
+docker run --rm -v "$PWD":/work -w /work -e BASE_URL=<live-url> \
+  --user "$(id -u):$(id -g)" -e HOME=/tmp \
+  mcr.microsoft.com/playwright:v1.61.0-jammy \
+  npx playwright test tests/visual --project=chromium --update-snapshots
+# verify it's deterministic: run again WITHOUT --update-snapshots → should pass
+```
+
+**Files**
+
+- `tests/visual/login.visual.spec.ts` + `…-snapshots/login-chromium-linux.png`
+- `package.json` (`test:visual`), `docs/adr/011-…md`, README, CONTRIBUTING
+
+**Learnings**
+
+- **Match the baseline's environment to CI's** (here: generate in the Docker image). This is the single thing that makes visual tests stable vs flaky.
+- Keep it **deterministic**: pick a static page, one browser, a small `maxDiffPixelRatio` — don't lean on a big tolerance to paper over a mismatched baseline.
+- A real CSS change means **regenerating** the baseline — a known, documented step, not a surprise failure.
+
+---
+
 ```markdown
 ## Step N — [Title]
 

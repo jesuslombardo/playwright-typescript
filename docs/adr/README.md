@@ -16,6 +16,7 @@ An [Architecture Decision Record](https://adr.github.io/) captures an important 
 | [008](008-test-sharding.md)                               | Test sharding (when, and when not)               | Accepted |
 | [009](009-node-version-matrix.md)                         | Node version matrix (when, and when not)         | Accepted |
 | [010](010-deploy-to-environment-and-post-deploy-smoke.md) | Deploy to a live environment + post-deploy smoke | Accepted |
+| [011](011-visual-regression-baseline-strategy.md)         | Visual regression — baseline strategy            | Accepted |
 
 ## When to add a new ADR
 
