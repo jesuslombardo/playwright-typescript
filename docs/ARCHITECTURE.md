@@ -137,7 +137,9 @@ Is it a URL, env var, or credential?   → config/
 | Page Object | `*.page.ts`      | `login.page.ts`       |
 | Component   | `*.component.ts` | `header.component.ts` |
 | Fixture     | `*.fixture.ts`   | `auth.fixture.ts`     |
-| Util        | `*.ts`           | `data-generator.ts`   |
+| Factory     | `*.factory.ts`   | `product.factory.ts`  |
+| Dataset     | `*.dataset.ts`   | `products.dataset.ts` |
+| Util        | `*.ts`           | `api.ts`              |
 
 ### Test organization
 
