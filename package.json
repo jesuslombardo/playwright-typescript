@@ -15,6 +15,7 @@
     "test:visual": "playwright test tests/visual --project=chromium",
     "test:micro": "BASE_URL=http://localhost:3000 playwright test --project=api",
     "test:contract": "NO_WEBSERVER=1 playwright test --project=contract",
+    "test:patterns": "playwright test --config playwright.patterns.config.ts",
     "app:setup": "APP_VERSION=$(tr -d '[:space:]' < .app-version); rm -rf app && git clone --depth 1 --branch \"$APP_VERSION\" https://github.com/jesuslombardo/demo-shop-app app && npm --prefix app ci",
     "report": "playwright show-report",
     "lint": "eslint .",
