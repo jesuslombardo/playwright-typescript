@@ -8,15 +8,16 @@ environment, env-backed credentials).
 
 ## What lives here
 
-| File                         | Kind                  | Simulates (industry situation)                         |
-| ---------------------------- | --------------------- | ------------------------------------------------------ |
-| `product.factory.ts`         | **Factory/builder**   | Dynamic, unique, synthetic data (faker) with overrides |
-| `products.dataset.ts`        | **Fixtures (TS)**     | Reference seed data + data-driven create cases         |
-| `auth.dataset.ts`            | **Fixtures (TS)**     | Data-driven login cases (valid / invalid)              |
-| `login.cases.csv`            | **External fixtures** | Data-driven login matrix in a spreadsheet-friendly CSV |
-| `login.cases.ts`             | **CSV loader**        | Parses the CSV into typed cases (`csv-parse`)          |
-| `product-updates.cases.json` | **External fixtures** | Data-driven PUT (update) matrix as JSON                |
-| `product-updates.cases.ts`   | **JSON loader**       | Imports the JSON into typed cases (zero-dep)           |
+| File                         | Kind                   | Simulates (industry situation)                                |
+| ---------------------------- | ---------------------- | ------------------------------------------------------------- |
+| `product.factory.ts`         | **Factory/builder**    | Dynamic, unique, synthetic data (faker) with overrides        |
+| `products.dataset.ts`        | **Fixtures (TS)**      | Reference seed data + data-driven create cases                |
+| `auth.dataset.ts`            | **Fixtures (TS)**      | Data-driven login cases (valid / invalid)                     |
+| `login.cases.csv`            | **External fixtures**  | Data-driven login matrix in a spreadsheet-friendly CSV        |
+| `login.cases.ts`             | **CSV loader**         | Parses the CSV into typed cases (`csv-parse`)                 |
+| `product-updates.cases.json` | **External fixtures**  | Data-driven PUT (update) matrix as JSON                       |
+| `product-updates.cases.ts`   | **JSON loader**        | Imports the JSON into typed cases (zero-dep)                  |
+| `write-ops.ts`               | **Operations-as-data** | Write endpoints as rows → drives the API authorization matrix |
 
 ## Factory vs fixture — when to use which
 

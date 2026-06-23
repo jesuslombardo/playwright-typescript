@@ -1,9 +1,6 @@
 import { test as base, expect, APIRequestContext } from '@playwright/test'
-import { buildProduct, Product } from '../data/product.factory'
+import { buildProduct, ApiProduct } from '../data/product.factory'
 import { testUsers } from '../config/environments'
-
-/** A product that exists in the app, with the id the API assigned it. */
-export type ApiProduct = Product & { id: number }
 
 type ProductFixtures = {
   apiProduct: ApiProduct
