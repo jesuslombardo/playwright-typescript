@@ -25,14 +25,14 @@ jobs:
 
     steps:
       - name: Checkout testing repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # DELIBERATELY @main (no ref): PR/push CI is pinned (.app-version) for
       # reproducibility, but the nightly runs against the LATEST app to catch
       # drift early — if this goes red while pinned CI is green, the pin is
       # behind and should be bumped. See ADR-013.
       - name: Checkout demo-shop-app (System Under Test) — latest main (drift detector)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: jesuslombardo/demo-shop-app
           path: app
