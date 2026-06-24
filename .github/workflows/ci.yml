@@ -128,7 +128,14 @@ jobs:
         id: resolve
         run: |
           APP_VERSION=$(tr -d '[:space:]' < .app-version)
-          SHA=$(git ls-remote https://github.com/jesuslombardo/demo-shop-app "refs/tags/${APP_VERSION}^{}" | cut -f1)
+          APP_REPO=https://github.com/jesuslombardo/demo-shop-app
+          # Annotated tags expose a peeled ^{} ref (the commit); lightweight tags
+          # (e.g. the ones release-please creates) don't — fall back to the tag
+          # itself, which already points straight at the commit.
+          SHA=$(git ls-remote "$APP_REPO" "refs/tags/${APP_VERSION}^{}" | cut -f1)
+          if [ -z "$SHA" ]; then
+            SHA=$(git ls-remote "$APP_REPO" "refs/tags/${APP_VERSION}" | cut -f1)
+          fi
           if [ -z "$SHA" ]; then
             echo "Could not resolve $APP_VERSION to a commit SHA" >&2
             exit 1

@@ -36,7 +36,7 @@ playwright-typescript/
 ├── pages/                  # Page Objects — one class per screen
 │   ├── login.page.ts
 │   └── products.page.ts
-├── components/             # Component Objects — shared UI across pages (reserved)
+├── components/             # Component Objects — shared UI across pages (header.component.ts)
 ├── fixtures/               # Custom Playwright fixtures (auth, product lifecycle)
 ├── data/                   # Test data layer — factories + datasets (ADR-014)
 │   ├── product.factory.ts  # faker-based builder for unique products
@@ -80,7 +80,7 @@ playwright-typescript/
 - UI shared across pages (navbar, modals) lives in `components/`.
 - Page objects **compose** components — they do not duplicate selectors.
 - Prefer **has-a** over **is-a** for components; use inheritance only for shared page layout (e.g. an authenticated shell).
-- The current SUT (demo-shop-app) has a deliberately minimal UI — two flat pages (`LoginPage`, `ProductsPage`) and no shared chrome yet — so `components/` is reserved for when shared UI appears. (Sauce Demo's `HeaderComponent`/`AuthenticatedPage` lived here previously; see git history + ADR-004.)
+- demo-shop-app **v2.0.0** introduced shared chrome — a topbar (☰ menu, live cart badge, catalogue/cart/orders links, role badge, Logout) on every signed-in page — so `components/header.component.ts` models it and the page objects **compose** it (`page.header`). (`components/` was empty while the SUT was two flat pages; Sauce Demo's earlier `HeaderComponent`/`AuthenticatedPage` are in git history. See ADR-004.)
 
 ### Fixtures
 

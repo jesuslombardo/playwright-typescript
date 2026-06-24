@@ -11,9 +11,9 @@ test.describe('Role-based catalogue view', () => {
   test('customer sees the storefront, not management', async ({ customerPage }) => {
     const products = new ProductsPage(customerPage)
 
-    await expect(products.roleBadge).toHaveText('customer')
+    await expect(products.header.roleBadge).toHaveText('customer')
     await expect(products.shopHint).toBeVisible()
-    await expect(products.cartLink).toBeVisible()
+    await expect(products.header.cartLink).toBeVisible()
     await expect(products.items.first().getByTestId('add-to-cart')).toBeVisible()
 
     // No management surface for a customer.
@@ -25,7 +25,7 @@ test.describe('Role-based catalogue view', () => {
   test('admin sees management, not the storefront', async ({ adminPage }) => {
     const products = new ProductsPage(adminPage)
 
-    await expect(products.roleBadge).toHaveText('admin')
+    await expect(products.header.roleBadge).toHaveText('admin')
     await expect(products.adminTools).toBeVisible()
     await expect(adminPage.getByTestId('edit-product').first()).toBeVisible()
     await expect(adminPage.getByTestId('delete-product').first()).toBeVisible()

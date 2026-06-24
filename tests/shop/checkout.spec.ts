@@ -65,7 +65,7 @@ test.describe('Checkout (customer)', () => {
 
     // Back on the catalogue the badge is empty again.
     await products.goto()
-    await expect(products.cartCount).toHaveText('0')
+    await expect(products.header.cartCount).toHaveText('0')
   })
 
   test('checkout with an empty cart shows the empty state', async ({ customerPage }) => {
@@ -73,12 +73,9 @@ test.describe('Checkout (customer)', () => {
     await checkout.goto()
     await expect(checkout.empty).toBeVisible()
 
-    // KNOWN GAP (app v2.0.0): the shipping form stays visible on an empty cart.
-    // checkout.js sets the grid's `hidden` attribute, but `.checkout-grid {
-    // display: grid }` (an author rule) overrides the UA `[hidden] { display:none }`,
-    // so the form — and "Place order" — render anyway. Documented as actual
-    // behaviour (cf. the price-guard gap in products.dataset.ts), not wished away;
-    // fix is a one-liner in the app's CSS (`.checkout-grid[hidden]{display:none}`).
-    await expect(checkout.placeOrderButton).toBeVisible()
+    // The shipping form is hidden on an empty cart (fixed in app v2.0.1:
+    // `.checkout-grid[hidden]{display:none}` + checkout.js toggling the grid's
+    // `hidden` attribute by cart state).
+    await expect(checkout.placeOrderButton).toBeHidden()
   })
 })

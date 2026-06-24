@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test'
+import { HeaderComponent } from '../components/header.component'
 import { BasePage } from './base.page'
 
 /**
@@ -8,12 +9,14 @@ import { BasePage } from './base.page'
  */
 export class OrdersPage extends BasePage {
   protected readonly path = '/orders.html'
+  readonly header: HeaderComponent
   readonly title: Locator
   readonly rows: Locator
   readonly empty: Locator
 
   constructor(page: Page) {
     super(page)
+    this.header = new HeaderComponent(page)
     this.title = page.getByTestId('title')
     this.rows = page.getByTestId('order-row')
     this.empty = page.getByTestId('orders-empty')

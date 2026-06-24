@@ -1,5 +1,6 @@
 import { Locator, Page } from '@playwright/test'
 import { Product } from '../data/product.factory'
+import { HeaderComponent } from '../components/header.component'
 import { BasePage } from './base.page'
 
 /**
@@ -10,20 +11,13 @@ import { BasePage } from './base.page'
  * Reads are public, so the product cards (`inventory-item`) render for both;
  * only the actions differ. This page object exposes both sets — a spec uses the
  * slice that matches the role it logged in as. Extends BasePage for `page` +
- * `goto()`.
+ * `goto()`; composes HeaderComponent for the shared topbar (`page.header`).
  */
 export class ProductsPage extends BasePage {
   protected readonly path = '/products.html'
+  readonly header: HeaderComponent
   readonly title: Locator
   readonly items: Locator
-  // Topbar (shared by every signed-in page).
-  readonly logoutButton: Locator
-  readonly menuToggle: Locator
-  readonly topbarNav: Locator
-  readonly roleBadge: Locator
-  readonly cartLink: Locator
-  readonly cartCount: Locator
-  readonly ordersLink: Locator
   // Customer storefront.
   readonly shopHint: Locator
   // Admin management: create form.
@@ -46,15 +40,9 @@ export class ProductsPage extends BasePage {
 
   constructor(page: Page) {
     super(page)
+    this.header = new HeaderComponent(page)
     this.title = page.getByTestId('title')
     this.items = page.getByTestId('inventory-item')
-    this.logoutButton = page.getByTestId('logout')
-    this.menuToggle = page.getByTestId('menu-toggle')
-    this.topbarNav = page.getByTestId('topbar-nav')
-    this.roleBadge = page.getByTestId('role-badge')
-    this.cartLink = page.getByTestId('cart-link')
-    this.cartCount = page.locator('#cart-count') // a span inside cart-link, not a test id
-    this.ordersLink = page.getByTestId('orders-link')
     this.shopHint = page.getByTestId('shop-hint')
     this.adminTools = page.getByTestId('admin-tools')
     this.newProductName = page.getByTestId('new-product-name')
@@ -78,15 +66,6 @@ export class ProductsPage extends BasePage {
   /** The price label of a card, for asserting the rendered (formatted) value. */
   priceOf(name: string): Locator {
     return this.itemByName(name).getByTestId('inventory-item-price')
-  }
-
-  /** Current units shown in the topbar cart badge. */
-  async cartCountValue(): Promise<number> {
-    return Number((await this.cartCount.textContent())?.trim() || '0')
-  }
-
-  async logout() {
-    await this.logoutButton.click()
   }
 
   /* ----- customer storefront ----- */
@@ -127,13 +106,5 @@ export class ProductsPage extends BasePage {
     if (updates.price !== undefined) await this.editPrice.fill(String(updates.price))
     if (updates.description !== undefined) await this.editDescription.fill(updates.description)
     await this.saveButton.click()
-  }
-
-  /**
-   * Mobile only: reveal the top-bar actions tucked behind the ☰ button.
-   * Uses a touch tap (requires a hasTouch context, e.g. the mobile project).
-   */
-  async openMobileMenu() {
-    await this.menuToggle.tap()
   }
 }
