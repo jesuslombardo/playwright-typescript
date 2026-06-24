@@ -196,17 +196,17 @@ test layers. Built one coherent theme per PR (1 PR = 1 ADR), additive / non-requ
 in CI so the protected `main` gate never deadlocks. Scope covers **both** repos
 (this one and the SUT `demo-shop-app`).
 
-| #   | Theme                          | What                                                                            | Status |
-| --- | ------------------------------ | ------------------------------------------------------------------------------- | ------ |
-| 1   | **Repo hygiene / governance**  | LICENSE (proprietary), CODEOWNERS, SECURITY.md, CoC, issue/PR templates         | ✅     |
-| 2   | **Supply-chain security**      | Dependabot + CodeQL (SAST) + Gitleaks (secret scan) + `npm audit` gate          | ✅     |
-| 3   | **Accessibility (a11y)**       | `@axe-core/playwright` scans on login + products (own project, always-on)       | ✅     |
-| 4   | **Release automation**         | commitlint + Conventional Commits + semantic-release (auto version + CHANGELOG) | ⬜     |
-| 5   | **Performance**                | Lighthouse CI budget on the static UI (perf/a11y/best-practices scores)         | ⬜     |
-| 6   | **Notifications**              | GitHub-native: nightly failure auto-opens / updates a tracking issue            | ⬜     |
-| 7   | **SUT: code coverage**         | `c8` coverage + threshold gate on `demo-shop-app` unit/integration              | ⬜     |
-| 8   | **SUT: supply-chain security** | Mirror Dependabot + CodeQL + Gitleaks + audit into the SUT repo                 | ⬜     |
-| 9   | **SUT: hygiene / governance**  | Mirror LICENSE (MIT — the app is meant to be reusable by students) + templates  | ⬜     |
+| #   | Theme                          | What                                                                           | Status |
+| --- | ------------------------------ | ------------------------------------------------------------------------------ | ------ |
+| 1   | **Repo hygiene / governance**  | LICENSE (proprietary), CODEOWNERS, SECURITY.md, CoC, issue/PR templates        | ✅     |
+| 2   | **Supply-chain security**      | Dependabot + CodeQL (SAST) + Gitleaks (secret scan) + `npm audit` gate         | ✅     |
+| 3   | **Accessibility (a11y)**       | `@axe-core/playwright` scans on login + products (own project, always-on)      | ✅     |
+| 4   | **Release automation**         | commitlint + Conventional Commits + release-please (auto version + CHANGELOG)  | ✅     |
+| 5   | **Performance**                | Lighthouse CI budget on the static UI (perf/a11y/best-practices scores)        | ⬜     |
+| 6   | **Notifications**              | GitHub-native: nightly failure auto-opens / updates a tracking issue           | ⬜     |
+| 7   | **SUT: code coverage**         | `c8` coverage + threshold gate on `demo-shop-app` unit/integration             | ⬜     |
+| 8   | **SUT: supply-chain security** | Mirror Dependabot + CodeQL + Gitleaks + audit into the SUT repo                | ⬜     |
+| 9   | **SUT: hygiene / governance**  | Mirror LICENSE (MIT — the app is meant to be reusable by students) + templates | ⬜     |
 
 > **Why MIT for the SUT but proprietary here:** the teaching repo (BUILD*LOG + ADRs)
 > \_is* the course product → All Rights Reserved. The demo app is a throwaway SUT that
