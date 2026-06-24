@@ -2145,6 +2145,75 @@ npm audit --audit-level=high     # 0 vulnerabilities locally
 - **Group Dependabot or drown in PRs.** One grouped npm PR/week beats 15 individual bumps; update fatigue is why teams ignore Dependabot.
 - **Advisory ≠ blocking.** CodeQL + gitleaks _report_; only `npm audit` fails a job, and only on high+. Required-check status is earned once the signal proves stable, not granted on day one.
 
+## Step 48 — Accessibility testing with axe-core (ADR-021) + SUT v1.2.0
+
+**Status:** Done
+
+**What**
+
+- Added an **`a11y` Playwright project** (`*.a11y.spec.ts`, Chromium-only, **always on** — same shape as `visual`) using **`@axe-core/playwright`**. Two specs scan the two primary surfaces: `tests/a11y/login.a11y.spec.ts` + `tests/a11y/products.a11y.spec.ts` (reuses the `loggedInPage` auth fixture).
+- Shared helper **`utils/a11y.ts`** (`expectNoSeriousA11yViolations`) runs axe over `wcag2a + wcag2aa + wcag21a + wcag21aa` and **fails on `serious`/`critical`** only, with an actionable message (rule id, impact, node count, help URL).
+- **Fixed the SUT instead of lowering the bar.** The first scan found `serious` `color-contrast` violations (3 login + 12 products): muted text just under 4.5:1 and the price in brand green `#3ddc91` (1.8:1 on white). Fixed in `demo-shop-app` (darker `--muted`, accessible `--price`, dropped a `filter: brightness()` hack axe can't read), released as **v1.2.0**; this repo's `.app-version` bumped `v1.1.0 → v1.2.0`. Gate now passes because the app is genuinely compliant.
+- New `test:a11y` script. `a11y` runs inside `test:regression` automatically (not `@api`); `@smoke` is unaffected.
+
+**Why**
+
+- Accessibility was a missing, marketable capability that — unlike a manual audit — can be automated and gated. See [ADR-021](adr/021-accessibility-testing-axe-core.md). Doing the SUT fix made this a live re-run of the cross-repo "merge app first" loop (ADR-013): app PR + tag v1.2.0 → pin bump here.
+
+**Commands**
+
+```bash
+npm run test:a11y        # 2 passed — login + products, 0 serious/critical
+```
+
+**Files**
+
+- `tests/a11y/login.a11y.spec.ts`, `tests/a11y/products.a11y.spec.ts`, `utils/a11y.ts` (new)
+- `playwright.config.ts` (`a11y` project + `A11Y_SPECS` ignore), `package.json` (+`test:a11y`, +`@axe-core/playwright`), `.app-version` (→ v1.2.0)
+- `docs/adr/021-accessibility-testing-axe-core.md` (new) + ADR index, `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`
+- SUT: `demo-shop-app` `public/css/styles.css` + `package.json` + `CHANGELOG.md` (PR #13, tag v1.2.0)
+
+**Learnings**
+
+- **Automated a11y is a floor, not a ceiling.** axe covers ~30–50% of WCAG — no keyboard/focus/screen-reader semantics. Gating it is valuable but must not be mistaken for full compliance (said so in the ADR).
+- **Fix the surface, don't exclude the rule.** Excluding `color-contrast` or gating at `critical`-only would have passed today while shipping real defects — the worse engineering _and_ teaching choice.
+- **`filter: brightness()` is invisible to axe.** Contrast must come from the actual color value; visual hacks fool the eye, not the audit (and not assistive tech).
+- **Always-on vs opt-in is about determinism.** axe is deterministic and free → always-on suite (like `visual`); the LLM `ai` suite is non-deterministic + paid → opt-in. The gating choice follows the cost/determinism, not the novelty.
+
+## Step 49 — Release automation: Conventional Commits + release-please (ADR-022)
+
+**Status:** Done
+
+**What**
+
+- **Conventional Commits enforced** at two layers: a Husky **`commit-msg`** hook running `commitlint` (`@commitlint/config-conventional`) for local commits, and a **`Commit lint` CI job** that validates the **PR title** (we squash-merge, so the title is what lands on `main`).
+- **`release-please`** (manifest-driven: `release-please-config.json` + `.release-please-manifest.json`, baseline `1.0.0`) in `.github/workflows/release.yml` (push to `main` + dispatch): maintains a **release PR** that bumps `package.json` + `CHANGELOG.md`; merging it tags the version and cuts a GitHub Release.
+- commitlint config relaxes `body/footer-max-line-length` (URLs + `Co-Authored-By` trailers) while keeping type/subject enforced.
+
+**Why**
+
+- Derive version + CHANGELOG from history instead of by hand. See [ADR-022](adr/022-release-automation-conventional-commits.md).
+
+**Commands**
+
+```bash
+echo "bad message" | npx commitlint    # exit 1 (type + subject empty)
+git commit -m "feat: ..."              # commit-msg hook validates locally
+```
+
+**Files**
+
+- `commitlint.config.js`, `.husky/commit-msg`, `release-please-config.json`, `.release-please-manifest.json` (new)
+- `.github/workflows/commitlint.yml`, `.github/workflows/release.yml` (new)
+- `docs/adr/022-release-automation-conventional-commits.md` (new) + ADR index, `docs/ROADMAP.md`
+- `package.json` (+`@commitlint/cli`, +`@commitlint/config-conventional`)
+
+**Learnings**
+
+- **The named tool isn't always the right tool.** semantic-release was the plan, but it pulls in the full `npm` CLI (via `@semantic-release/npm`) which **bundles** a high-severity `undici` that `overrides` can't reach → it would fail our own `npm audit` gate (ADR-020). It also pushes version commits to a **protected `main`**. Switched to **release-please** (a GitHub Action, **zero devDeps**, release-PR model that fits protected branches). Documented the swap honestly.
+- **Squash-merge changes what you lint.** With squash, the PR _title_ becomes the release-relevant subject — so CI lints the title, not the branch commits.
+- **GITHUB_TOKEN PRs don't cascade.** A release PR opened with the default token won't trigger required checks; a `RELEASE_PLEASE_TOKEN` PAT fixes it (workflow already falls back to it). Honest limitation, documented.
+
 ## Step N — [Title]
 
 **Status:** Done | In progress | Pending

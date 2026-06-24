@@ -31,6 +31,7 @@ playwright-typescript/
 │   ├── products/           # product list, create/delete (E2E)
 │   ├── visual/             # visual regression baseline (E2E, @visual)
 │   ├── mobile/             # responsive/touch on an emulated device (*.mobile.spec.ts)
+│   ├── a11y/               # accessibility scans (axe-core, *.a11y.spec.ts) — ADR-021
 │   └── ai/                 # LLM-as-judge + self-healing (opt-in, *.ai.spec.ts) — ADR-019
 ├── pages/                  # Page Objects — one class per screen
 │   ├── login.page.ts
@@ -116,6 +117,18 @@ See [ADR-014](adr/014-test-data-layer.md) and [`data/README.md`](../data/README.
   mapped to the file that shows it, plus an interview-defense cheat sheet.
 - Guiding rule: **a pattern must earn its place** — see
   [ADR-018](adr/018-oop-patterns-and-principles-layer.md).
+
+### Accessibility (axe-core)
+
+- An **always-on** `a11y` Playwright project (`*.a11y.spec.ts`, Chromium-only, like
+  `visual`) scans the login and products pages with **`@axe-core/playwright`** over
+  WCAG 2.0/2.1 A + AA, via the shared helper `utils/a11y.ts`.
+- The gate **fails on `serious`/`critical`** violations only (`minor`/`moderate` are
+  a backlog). The first scan found real contrast defects in the SUT, which were
+  **fixed in `demo-shop-app` v1.2.0** rather than excluded — so the gate passes
+  because the app is compliant. See [ADR-021](adr/021-accessibility-testing-axe-core.md).
+- Automated checks are a **floor, not a ceiling**: they don't replace manual /
+  assistive-technology testing.
 
 ### AI-assisted testing (opt-in study layer)
 

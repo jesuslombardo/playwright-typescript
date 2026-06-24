@@ -14,6 +14,7 @@
     "test:smoke": "playwright test --grep @smoke",
     "test:regression": "playwright test --grep-invert @api",
     "test:visual": "playwright test tests/visual --project=chromium",
+    "test:a11y": "playwright test --project=a11y",
     "test:micro": "BASE_URL=http://localhost:3000 playwright test --project=api",
     "test:contract": "NO_WEBSERVER=1 playwright test --project=contract",
     "test:ai": "AI_TESTS=1 playwright test --project=ai",
@@ -49,6 +50,9 @@
   },
   "homepage": "https://github.com/jesuslombardo/playwright-typescript#readme",
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@commitlint/cli": "^21.1.0",
+    "@commitlint/config-conventional": "^21.1.0",
     "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.5.0",
     "@google/genai": "^2.9.0",
