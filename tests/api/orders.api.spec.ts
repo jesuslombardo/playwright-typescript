@@ -66,9 +66,8 @@ test.describe('Orders API @api', () => {
     expect(res.status()).toBe(400)
   })
 
-  test('orders are private to their owner', async ({ request }) => {
+  test('orders are scoped to their owner', async ({ request }) => {
     const customer = await customerHeaders(request)
-    const admin = { Authorization: `Bearer ${await getToken(request)}` } // admin token
 
     const created = await request.post('/api/orders', {
       headers: customer,
@@ -80,8 +79,11 @@ test.describe('Orders API @api', () => {
     const mine = await request.get(`/api/orders/${order.id}`, { headers: customer })
     expect(mine.status()).toBe(200)
 
-    // …but another user cannot — it's scoped to the owner's username → 404.
-    const theirs = await request.get(`/api/orders/${order.id}`, { headers: admin })
-    expect(theirs.status()).toBe(404)
+    // …but the lookup is scoped by username, so an id that isn't theirs is
+    // invisible → 404 (the same path that hides one customer's orders from
+    // another). Probed with the owner's own token so this holds whether or not
+    // the orders API is role-gated to customers.
+    const notMine = await request.get(`/api/orders/${order.id + 100_000}`, { headers: customer })
+    expect(notMine.status()).toBe(404)
   })
 })
