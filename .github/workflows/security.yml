@@ -1,0 +1,52 @@
+name: Security
+
+# Two supply-chain controls, both additive / non-required:
+#   - gitleaks: scans the repo (and history) for committed secrets
+#   - npm audit: fails if a known high+ vulnerability is in the dependency tree
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly full scan (Tuesdays 05:00 UTC).
+    - cron: '0 5 * * 2'
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v6
+        with:
+          # Full history so the scan covers every past commit, not just the PR diff.
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Honors .gitleaks.toml at the repo root (allowlists the public demo creds).
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  audit:
+    name: Dependency audit (npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      # Audit reads package-lock.json directly; no full install / scripts needed.
+      - name: Audit production + dev dependencies (fail on high or critical)
+        run: npm audit --audit-level=high

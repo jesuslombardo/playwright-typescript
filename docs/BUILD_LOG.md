@@ -2111,6 +2111,40 @@ npm run lint           # unaffected (no source changed)
 - **Governance is additive and zero-risk.** None of these files run in CI, but every one of them is what a reviewer scans first to judge whether a repo is maintained — high signal, near-zero cost.
 - **A PR template is executable process.** Putting "merge app first" and "docs updated" into the template makes the repo's conventions self-enforcing instead of tribal knowledge.
 
+## Step 47 — Supply-chain security: Dependabot + CodeQL + gitleaks + npm audit (ADR-020)
+
+**Status:** Done
+
+**What**
+
+- Added the **DevSecOps layer** — four controls, all additive / non-required (the protected `main` gate is untouched):
+  - **Dependabot** (`.github/dependabot.yml`) — weekly, **grouped** PRs for npm + github-actions (one PR per ecosystem instead of one per package).
+  - **CodeQL** (`.github/workflows/codeql.yml`) — SAST for `javascript-typescript` with the `security-and-quality` query suite; findings land in the Security → Code scanning tab.
+  - **gitleaks** (`.github/workflows/security.yml`, job `gitleaks`) — secret scan over **full history** (`fetch-depth: 0`), tuned by a **`.gitleaks.toml` allowlist** for the SUT's _public_ demo creds (`standard_user` / `secret_sauce`) + the non-prod JWT default.
+  - **`npm audit --audit-level=high`** (`security.yml`, job `audit`) — fails only on high/critical. Local state today: **0 vulnerabilities**.
+
+**Why**
+
+- DevSecOps was the single biggest category missing vs a mature industry repo. Each control is cheap because GitHub provides the machinery, and none needs a third-party account/token. See [ADR-020](adr/020-supply-chain-security.md).
+
+**Commands**
+
+```bash
+npm audit --audit-level=high     # 0 vulnerabilities locally
+# CodeQL / gitleaks run in CI on push + PR + weekly schedule
+```
+
+**Files**
+
+- `.github/dependabot.yml`, `.github/workflows/codeql.yml`, `.github/workflows/security.yml`, `.gitleaks.toml` (new)
+- `docs/adr/020-supply-chain-security.md` (new) + ADR index, `docs/ROADMAP.md` (Phase 6 rows 1–2 ✅)
+
+**Learnings**
+
+- **Tune the scanner, don't disable it.** The real skill is the `.gitleaks.toml` allowlist (specific literals + fixture paths) — it keeps the scan green _and_ signal-rich, the opposite of `continue-on-error`. Narrow allowlist so it can't mask a real leak.
+- **Group Dependabot or drown in PRs.** One grouped npm PR/week beats 15 individual bumps; update fatigue is why teams ignore Dependabot.
+- **Advisory ≠ blocking.** CodeQL + gitleaks _report_; only `npm audit` fails a job, and only on high+. Required-check status is earned once the signal proves stable, not granted on day one.
+
 ## Step N — [Title]
 
 **Status:** Done | In progress | Pending
