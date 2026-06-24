@@ -1,0 +1,29 @@
+# gitleaks configuration for playwright-typescript
+# Extends the built-in ruleset and allowlists the PUBLIC demo credentials this
+# repo intentionally commits as test fixtures. These are not real secrets:
+# the SUT (demo-shop-app) ships them as its public login (standard_user /
+# secret_sauce) and a non-production JWT default.
+
+title = "playwright-typescript gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Public demo credentials and test fixtures — intentionally committed, not real secrets."
+
+# Known non-secret literals that may resemble credentials.
+regexes = [
+  '''secret_sauce''',
+  '''demo-shop-dev-secret''',
+  '''standard_user''',
+]
+
+# Files whose whole purpose is to carry sample/test credentials.
+paths = [
+  '''\.env\.example''',
+  '''data/login\.cases\.csv''',
+  '''data/auth\.dataset\.ts''',
+  '''pacts/.*\.json''',
+  '''examples/.*''',
+]
