@@ -22,14 +22,14 @@ jobs:
 
     steps:
       - name: Checkout testing repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Cross-repo version pin: test against the FIXED app tag (.app-version). See ADR-013.
       - name: Resolve pinned app version
         run: echo "APP_VERSION=$(tr -d '[:space:]' < .app-version)" >> "$GITHUB_ENV"
 
       - name: Checkout demo-shop-app (System Under Test) at pinned version
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: jesuslombardo/demo-shop-app
           ref: ${{ env.APP_VERSION }}
