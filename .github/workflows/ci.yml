@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -61,7 +61,7 @@ jobs:
 
     steps:
       - name: Checkout testing repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Cross-repo version pin: test against a FIXED app tag (.app-version),
       # not a moving @main, so CI is reproducible. Bump = a deliberate PR that
@@ -70,7 +70,7 @@ jobs:
         run: echo "APP_VERSION=$(tr -d '[:space:]' < .app-version)" >> "$GITHUB_ENV"
 
       - name: Checkout demo-shop-app (System Under Test) at pinned version
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: jesuslombardo/demo-shop-app
           ref: ${{ env.APP_VERSION }}
@@ -122,7 +122,7 @@ jobs:
 
     steps:
       - name: Checkout testing repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Resolve .app-version tag to the image's commit SHA
         id: resolve
@@ -156,7 +156,7 @@ jobs:
 
     steps:
       - name: Checkout testing repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -207,7 +207,7 @@ jobs:
 
     steps:
       - name: Checkout testing repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -232,7 +232,7 @@ jobs:
 
     steps:
       - name: Checkout testing repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Cross-repo version pin: test against a FIXED app tag (.app-version),
       # not a moving @main, so CI is reproducible. Bump = a deliberate PR that
@@ -241,7 +241,7 @@ jobs:
         run: echo "APP_VERSION=$(tr -d '[:space:]' < .app-version)" >> "$GITHUB_ENV"
 
       - name: Checkout demo-shop-app (System Under Test) at pinned version
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: jesuslombardo/demo-shop-app
           ref: ${{ env.APP_VERSION }}
@@ -293,7 +293,7 @@ jobs:
 
     steps:
       - name: Checkout testing repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Cross-repo version pin: test against a FIXED app tag (.app-version),
       # not a moving @main, so CI is reproducible. Bump = a deliberate PR that
@@ -302,7 +302,7 @@ jobs:
         run: echo "APP_VERSION=$(tr -d '[:space:]' < .app-version)" >> "$GITHUB_ENV"
 
       - name: Checkout demo-shop-app (System Under Test) at pinned version
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: jesuslombardo/demo-shop-app
           ref: ${{ env.APP_VERSION }}
@@ -340,7 +340,7 @@ jobs:
 
     steps:
       - name: Checkout testing repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -352,7 +352,7 @@ jobs:
         run: npm ci
 
       - name: Download blob reports from all shards
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: all-blob-reports
           pattern: blob-report-*
@@ -363,7 +363,7 @@ jobs:
 
       - name: Upload report for GitHub Pages
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: playwright-report/
 
@@ -382,4 +382,4 @@ jobs:
     steps:
       - name: Deploy Playwright report to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
