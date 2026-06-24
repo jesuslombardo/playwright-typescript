@@ -8,6 +8,29 @@ A foundational project to incrementally build a modern, maintainable, and scalab
 
 **Live app (System Under Test):** the companion [demo-shop-app](https://github.com/jesuslombardo/demo-shop-app) is promoted on every green `main` through **[staging](https://demo-shop-app-staging.onrender.com) → (manual approval) → [production](https://demo-shop-app-mlkv.onrender.com)**, each verified by a post-deploy smoke _(free tier — first request may take ~50s to wake)_.
 
+## Getting Started
+
+> Requires **Node 22+** (see `.nvmrc`).
+
+```bash
+npm ci                                    # 1. install framework dependencies
+npx playwright install chromium webkit    # 2. install the browsers Playwright drives
+npm run app:setup                         # 3. clone + start the app under test into ./app
+npm test                                  # 4. run the whole suite
+```
+
+Playwright starts the app automatically before the tests (see `webServer` in
+`playwright.config.ts`), so there is no separate "start" command.
+
+**Exploring? Run the visual UI mode instead** — step through each test and watch
+the browser:
+
+```bash
+npm run test:ui
+```
+
+For the two-repo workflow and all test scripts, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Vision
 
 This repository evolves from scratch into a complete testing solution for web applications, with a focus on:
