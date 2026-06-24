@@ -2245,6 +2245,7 @@ git commit -m "feat: ..."              # commit-msg hook validates locally
 - **`GITHUB_TOKEN` is deliberately "second-class" for cascading automation.** Anything it does won't start another workflow. The moment an automation must **open a PR that then needs CI** (release-please, auto-changelog bots), you need a non-`GITHUB_TOKEN` identity: a **PAT** or, better, a **GitHub App**.
 - **App vs PAT:** same effect (real identity → checks run), but the App token is regenerated per run, so there is no expiry to babysit — the right call for a long-lived/course repo.
 - The repo toggle alone (_"Allow Actions to create PRs"_) would have let the PR be _created_ but it still would not have run the required checks → still stuck behind `enforce_admins`. The identity, not the toggle, is the real fix.
+- **Follow-on, verified live:** once the App opened the release PR, its required checks finally ran — and `Lint and format` failed because release-please's generated `CHANGELOG.md` is not Prettier-formatted, so `prettier --check .` rejected it (and the failure cascaded: `quality` ❌ → `api`/`smoke`/`regression` skipped → `merge-reports` ran with no blobs and also failed). Fix: add `CHANGELOG.md` to `.prettierignore` (release-please owns that file's format), same pattern as the `*.csv` fixtures. **Lesson: a tool that _generates_ a file will fight a formatter that _checks_ it — exclude generated files from the format gate.**
 
 ## Step N — [Title]
 
