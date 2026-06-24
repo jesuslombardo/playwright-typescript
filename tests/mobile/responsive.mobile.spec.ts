@@ -19,10 +19,13 @@ import { testUsers } from '../../config/environments'
  * project (the desktop projects testIgnore them).
  */
 test.describe('Mobile — responsive products page', () => {
+  // Logged in as ADMIN: this suite checks the catalogue grid AND the admin-only
+  // "Add product" form's responsive stacking, which only renders for an admin
+  // (a customer sees the read-only storefront instead).
   test.beforeEach(async ({ page }) => {
     const loginPage = new LoginPage(page)
     await loginPage.goto()
-    await loginPage.login(testUsers.standard.username, testUsers.standard.password)
+    await loginPage.login(testUsers.admin.username, testUsers.admin.password)
     await expect(new ProductsPage(page).title).toBeVisible()
   })
 
