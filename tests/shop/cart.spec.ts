@@ -20,13 +20,13 @@ test.describe('Cart (customer)', () => {
 
   test('adding products updates the live badge', { tag: '@smoke' }, async ({ customerPage }) => {
     const products = new ProductsPage(customerPage)
-    await expect(products.cartCount).toHaveText('0')
+    await expect(products.header.cartCount).toHaveText('0')
 
     await products.addToCartByName(backpack.name, 2)
-    await expect(products.cartCount).toHaveText('2')
+    await expect(products.header.cartCount).toHaveText('2')
 
     await products.addToCartByName(bikeLight.name, 1)
-    await expect(products.cartCount).toHaveText('3')
+    await expect(products.header.cartCount).toHaveText('3')
   })
 
   test('the cart lists lines with correct line totals and subtotal', async ({ customerPage }) => {

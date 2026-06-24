@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test'
+import { HeaderComponent } from '../components/header.component'
 import { BasePage } from './base.page'
 
 /** Shipping details collected at checkout. City/zip are optional in the app. */
@@ -17,6 +18,7 @@ export type ShippingDetails = {
  */
 export class CheckoutPage extends BasePage {
   protected readonly path = '/checkout.html'
+  readonly header: HeaderComponent
   readonly grid: Locator
   readonly empty: Locator
   readonly summaryLines: Locator
@@ -30,6 +32,7 @@ export class CheckoutPage extends BasePage {
 
   constructor(page: Page) {
     super(page)
+    this.header = new HeaderComponent(page)
     this.grid = page.getByTestId('summary-lines')
     this.empty = page.getByTestId('cart-empty')
     this.summaryLines = page.getByTestId('summary-line')

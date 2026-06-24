@@ -7,7 +7,7 @@ test.describe('Logout', () => {
     const productsPage = new ProductsPage(loggedInPage)
 
     await expect(productsPage.title).toBeVisible()
-    await productsPage.logout()
+    await productsPage.header.logout()
 
     const loginPage = new LoginPage(loggedInPage)
     await expect(loginPage.loginButton).toBeVisible()

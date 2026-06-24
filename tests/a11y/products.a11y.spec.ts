@@ -10,12 +10,9 @@ test.describe('Accessibility — products page', () => {
     'customer storefront has no critical or serious WCAG A/AA violations',
     { tag: '@a11y' },
     async ({ customerPage }) => {
-      // KNOWN GAP (app v2.0.0): each storefront card's quantity <input
-      // data-test="add-quantity"> has no <label>/aria-label → axe "label"
-      // (critical). The admin form inputs pass because they carry placeholders;
-      // the qty input has none. Excluded here so the gate still guards every
-      // OTHER element; tracked for an app fix (add an aria-label to the input).
-      await expectNoSeriousA11yViolations(customerPage, { exclude: ['[data-test="add-quantity"]'] })
+      // The storefront quantity inputs carry an aria-label as of app v2.0.1, so
+      // the whole storefront passes with no exclusions.
+      await expectNoSeriousA11yViolations(customerPage)
     },
   )
 

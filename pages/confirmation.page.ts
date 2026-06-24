@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test'
+import { HeaderComponent } from '../components/header.component'
 import { BasePage } from './base.page'
 
 /**
@@ -12,6 +13,7 @@ import { BasePage } from './base.page'
  */
 export class ConfirmationPage extends BasePage {
   protected readonly path = '/confirmation.html'
+  readonly header: HeaderComponent
   readonly container: Locator
   readonly thankYou: Locator
   readonly orderNumber: Locator
@@ -22,6 +24,7 @@ export class ConfirmationPage extends BasePage {
 
   constructor(page: Page) {
     super(page)
+    this.header = new HeaderComponent(page)
     this.container = page.getByTestId('order-confirmation')
     this.thankYou = page.getByTestId('thank-you')
     this.orderNumber = page.getByTestId('order-number')

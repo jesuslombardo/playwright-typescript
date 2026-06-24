@@ -33,12 +33,12 @@ test.describe('Mobile — responsive products page', () => {
     const products = new ProductsPage(page)
 
     // On a phone the ☰ button shows and Logout is hidden behind it...
-    await expect(products.menuToggle).toBeVisible()
-    await expect(products.logoutButton).toBeHidden()
+    await expect(products.header.menuToggle).toBeVisible()
+    await expect(products.header.logoutButton).toBeHidden()
 
     // ...a touch tap on the hamburger reveals it (a real touch interaction).
-    await products.openMobileMenu()
-    await expect(products.logoutButton).toBeVisible()
+    await products.header.openMobileMenu()
+    await expect(products.header.logoutButton).toBeVisible()
   })
 
   test('the add-product form stacks into a single column', async ({ page }) => {
