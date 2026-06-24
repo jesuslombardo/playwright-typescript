@@ -15,6 +15,9 @@ const CONTRACT_SPECS = /.*\.pact\.spec\.ts$/
 /** AI suite (LLM-as-judge + self-healing) — own project, opt-in via AI_TESTS. */
 const AI_SPECS = /.*\.ai\.spec\.ts$/
 
+/** Accessibility (axe-core) specs — own Chromium-only project, like visual. */
+const A11Y_SPECS = /.*\.a11y\.spec\.ts$/
+
 const apiProject = {
   name: 'api',
   testMatch: API_SPECS,
@@ -30,7 +33,7 @@ const contractProject = {
 const browserProject = (name: string, device: string) => ({
   name,
   use: { ...devices[device] },
-  testIgnore: [API_SPECS, MOBILE_SPECS, CONTRACT_SPECS, AI_SPECS],
+  testIgnore: [API_SPECS, MOBILE_SPECS, CONTRACT_SPECS, AI_SPECS, A11Y_SPECS],
 })
 
 /*
@@ -76,6 +79,18 @@ const aiProject = {
 }
 const aiProjects = process.env.AI_TESTS ? [aiProject] : []
 
+/*
+ * Accessibility suite (axe-core). Deterministic, so it is ALWAYS ON and runs in
+ * the normal/regression run — but Chromium-only (like visual regression): one
+ * engine is enough for WCAG rule checks and keeps it fast. Matched by
+ * *.a11y.spec.ts; every other project ignores those files. See ADR-021.
+ */
+const a11yProject = {
+  name: 'a11y',
+  testMatch: A11Y_SPECS,
+  use: { ...devices['Desktop Chrome'] },
+}
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -110,7 +125,14 @@ export default defineConfig({
    * browsers → desktop E2E. Local: Chromium only (fast). CI / CROSS_BROWSER: all three.
    * mobile   → emulated-device E2E (iPhone/WebKit + Pixel/Chromium). Runs only *.mobile.spec.ts.
    */
-  projects: [apiProject, contractProject, ...browserProjects, ...mobileProjects, ...aiProjects],
+  projects: [
+    apiProject,
+    contractProject,
+    ...browserProjects,
+    ...mobileProjects,
+    a11yProject,
+    ...aiProjects,
+  ],
 
   /*
    * Start the System Under Test before tests run.

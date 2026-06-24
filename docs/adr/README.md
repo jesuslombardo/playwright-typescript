@@ -26,6 +26,7 @@ An [Architecture Decision Record](https://adr.github.io/) captures an important 
 | [018](018-oop-patterns-and-principles-layer.md)              | OOP patterns & principles — organic vs gallery           | Accepted |
 | [019](019-ai-assisted-testing-llm-judge-and-self-healing.md) | AI-assisted testing — LLM-as-judge & self-healing        | Accepted |
 | [020](020-supply-chain-security.md)                          | Supply-chain security — Dependabot/CodeQL/gitleaks/audit | Accepted |
+| [021](021-accessibility-testing-axe-core.md)                 | Accessibility testing with axe-core                      | Accepted |
 
 ## When to add a new ADR
 
