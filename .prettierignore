@@ -7,3 +7,7 @@ app
 
 # Prettier has no CSV parser — keep data fixtures as-is
 *.csv
+
+# Generated and owned by release-please — its formatting is not Prettier's to police
+# (otherwise the format:check gate fails on every auto-generated release PR). See ADR-022.
+CHANGELOG.md

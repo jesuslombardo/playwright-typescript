@@ -60,10 +60,16 @@ branches** — the release goes through the same required checks as any other PR
 ### Negative
 
 - A release PR opened with the default `GITHUB_TOKEN` **does not trigger** other
-  workflows, so its required checks won't run automatically. Documented fix: add a
-  `RELEASE_PLEASE_TOKEN` PAT (the workflow already falls back to it). Until then the
-  release PR is created (automation demonstrated) but needs a PAT or a manual
-  check re-run to merge.
+  workflows (an anti-recursion safeguard), so its required checks never run — and on
+  this protected `main` (`enforce_admins: true`) a PR with no checks is **unmergeable**.
+  This actually happened on the first run (`release-please failed: GitHub Actions is
+not permitted to create or approve pull requests`). **Resolved by opening the release
+  PR as a GitHub App** (`actions/create-github-app-token` mints a short-lived token;
+  `release.yml` passes it to release-please). The App is a non-`GITHUB_TOKEN` identity,
+  so the release PR runs the normal required checks and can be merged. Chosen over a
+  PAT because an App token **has nothing to renew** (PATs expire); the trade-off is a
+  one-time App setup (create + install on the repo, store `RELEASE_PLEASE_APP_ID` +
+  `RELEASE_PLEASE_APP_PRIVATE_KEY` secrets). See BUILD_LOG Step 50.
 - Conventional-Commit discipline is now mandatory — intentional, but a small tax.
 
 ## Alternatives considered
