@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Architecture & decisions
+    url: https://github.com/jesuslombardo/playwright-typescript/tree/main/docs/adr
+    about: Read the ADRs before proposing a change — the "why" behind the current design lives here.
+  - name: Contributing guide
+    url: https://github.com/jesuslombardo/playwright-typescript/blob/main/CONTRIBUTING.md
+    about: The two-repo workflow, branch/PR flow, and how to run each suite.

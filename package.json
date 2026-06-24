@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A foundational project to incrementally build a modern, maintainable, and scalable test automation framework, following real-world quality engineering practices.",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "test": "playwright test",
     "test:cross-browser": "CROSS_BROWSER=true playwright test",
@@ -41,8 +42,8 @@
     "type": "git",
     "url": "git+https://github.com/jesuslombardo/playwright-typescript.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Jesus Lombardo",
+  "license": "UNLICENSED",
   "bugs": {
     "url": "https://github.com/jesuslombardo/playwright-typescript/issues"
   },

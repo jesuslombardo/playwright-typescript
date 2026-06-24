@@ -1,0 +1,12 @@
+# Code owners for playwright-typescript
+# These owners are requested for review automatically on any pull request.
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repo
+*                       @jesuslombardo
+
+# CI/CD and security automation
+/.github/               @jesuslombardo
+
+# Architecture decisions and the build journal (the course content)
+/docs/                  @jesuslombardo
