@@ -4,6 +4,8 @@ import { seededProducts } from '../../data/products.dataset'
 import { buildProduct } from '../../data/product.factory'
 
 test.describe('Products', () => {
+  // Reads are public, so the catalogue lists for a customer too — this is the
+  // storefront view (cards carry "Add to cart", not management controls).
   test('seeded products are listed', { tag: '@smoke' }, async ({ loggedInPage }) => {
     const productsPage = new ProductsPage(loggedInPage)
 
@@ -15,8 +17,9 @@ test.describe('Products', () => {
     await expect(productsPage.itemByName(seededProducts.backpack.name)).toBeVisible()
   })
 
-  test('user can create a new product and then delete it', async ({ loggedInPage }) => {
-    const productsPage = new ProductsPage(loggedInPage)
+  // Catalogue writes are admin-only since v2.0.0, so management runs as admin.
+  test('admin can create a new product and then delete it', async ({ adminPage }) => {
+    const productsPage = new ProductsPage(adminPage)
     const product = buildProduct()
 
     await productsPage.addProduct(product)

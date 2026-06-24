@@ -8,6 +8,7 @@ import { buildProduct } from './product.factory'
  */
 export const seededProducts = {
   backpack: { name: 'Sauce Labs Backpack', price: 29.99 },
+  bikeLight: { name: 'Sauce Labs Bike Light', price: 9.99 },
 } as const
 
 /** One row of a data-driven create test: a payload plus its expected outcome. */
