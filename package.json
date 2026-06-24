@@ -55,19 +55,19 @@
     "@commitlint/config-conventional": "^21.1.0",
     "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.5.0",
-    "@google/genai": "^2.9.0",
+    "@google/genai": "^2.10.0",
     "@pact-foundation/pact": "^16.5.0",
-    "@playwright/test": "^1.61.0",
-    "@types/node": "^25.9.3",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.0.0",
     "ajv": "^8.20.0",
     "csv-parse": "^7.0.0",
     "dotenv": "^17.4.2",
     "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.7",
+    "lint-staged": "^17.0.8",
     "prettier": "^3.8.4",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.1"
+    "typescript-eslint": "^8.62.0"
   }
 }
