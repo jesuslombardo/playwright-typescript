@@ -39,6 +39,19 @@ test.describe('Orders API @api', () => {
     expect(res.status()).toBe(401)
   })
 
+  test('the orders API is customer-only — an admin is rejected → 403', async ({ request }) => {
+    // Mirror of the admin-only catalogue writes: admins manage, they don't shop.
+    const admin = { Authorization: `Bearer ${await getToken(request)}` } // getToken defaults to admin
+
+    expect((await request.get('/api/orders', { headers: admin })).status()).toBe(403)
+
+    const placed = await request.post('/api/orders', {
+      headers: admin,
+      data: { items: [{ productId: BACKPACK_ID, quantity: 1 }], customer: buildCustomer() },
+    })
+    expect(placed.status()).toBe(403)
+  })
+
   test('an invalid payload is rejected → 400', async ({ request }) => {
     const headers = await customerHeaders(request)
 
