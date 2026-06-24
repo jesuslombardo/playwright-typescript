@@ -200,7 +200,7 @@ in CI so the protected `main` gate never deadlocks. Scope covers **both** repos
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ------ |
 | 1   | **Repo hygiene / governance**  | LICENSE (proprietary), CODEOWNERS, SECURITY.md, CoC, issue/PR templates         | ✅     |
 | 2   | **Supply-chain security**      | Dependabot + CodeQL (SAST) + Gitleaks (secret scan) + `npm audit` gate          | ✅     |
-| 3   | **Accessibility (a11y)**       | `@axe-core/playwright` scans on login + products (own project, gated)           | ⬜     |
+| 3   | **Accessibility (a11y)**       | `@axe-core/playwright` scans on login + products (own project, always-on)       | ✅     |
 | 4   | **Release automation**         | commitlint + Conventional Commits + semantic-release (auto version + CHANGELOG) | ⬜     |
 | 5   | **Performance**                | Lighthouse CI budget on the static UI (perf/a11y/best-practices scores)         | ⬜     |
 | 6   | **Notifications**              | GitHub-native: nightly failure auto-opens / updates a tracking issue            | ⬜     |
