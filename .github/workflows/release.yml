@@ -1,0 +1,29 @@
+name: Release
+
+# Automated, Conventional-Commit-driven releases via release-please.
+# On each push to main it maintains a "release PR" that bumps the version and
+# CHANGELOG.md from the commit history; merging that PR tags the version and
+# publishes a GitHub Release. The release PR goes through the same required
+# checks as any other PR — which is exactly why this fits a protected `main`
+# (unlike a bot pushing version commits straight to it). See ADR-022.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      # Manifest-driven (release-please-config.json + .release-please-manifest.json).
+      - uses: googleapis/release-please-action@v4
+        with:
+          # Falls back to GITHUB_TOKEN. Set a RELEASE_PLEASE_TOKEN (a PAT) so the
+          # release PR's required checks run automatically — GITHUB_TOKEN-created
+          # PRs do not trigger other workflows.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}

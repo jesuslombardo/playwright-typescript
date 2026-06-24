@@ -2180,6 +2180,40 @@ npm run test:a11y        # 2 passed — login + products, 0 serious/critical
 - **`filter: brightness()` is invisible to axe.** Contrast must come from the actual color value; visual hacks fool the eye, not the audit (and not assistive tech).
 - **Always-on vs opt-in is about determinism.** axe is deterministic and free → always-on suite (like `visual`); the LLM `ai` suite is non-deterministic + paid → opt-in. The gating choice follows the cost/determinism, not the novelty.
 
+## Step 49 — Release automation: Conventional Commits + release-please (ADR-022)
+
+**Status:** Done
+
+**What**
+
+- **Conventional Commits enforced** at two layers: a Husky **`commit-msg`** hook running `commitlint` (`@commitlint/config-conventional`) for local commits, and a **`Commit lint` CI job** that validates the **PR title** (we squash-merge, so the title is what lands on `main`).
+- **`release-please`** (manifest-driven: `release-please-config.json` + `.release-please-manifest.json`, baseline `1.0.0`) in `.github/workflows/release.yml` (push to `main` + dispatch): maintains a **release PR** that bumps `package.json` + `CHANGELOG.md`; merging it tags the version and cuts a GitHub Release.
+- commitlint config relaxes `body/footer-max-line-length` (URLs + `Co-Authored-By` trailers) while keeping type/subject enforced.
+
+**Why**
+
+- Derive version + CHANGELOG from history instead of by hand. See [ADR-022](adr/022-release-automation-conventional-commits.md).
+
+**Commands**
+
+```bash
+echo "bad message" | npx commitlint    # exit 1 (type + subject empty)
+git commit -m "feat: ..."              # commit-msg hook validates locally
+```
+
+**Files**
+
+- `commitlint.config.js`, `.husky/commit-msg`, `release-please-config.json`, `.release-please-manifest.json` (new)
+- `.github/workflows/commitlint.yml`, `.github/workflows/release.yml` (new)
+- `docs/adr/022-release-automation-conventional-commits.md` (new) + ADR index, `docs/ROADMAP.md`
+- `package.json` (+`@commitlint/cli`, +`@commitlint/config-conventional`)
+
+**Learnings**
+
+- **The named tool isn't always the right tool.** semantic-release was the plan, but it pulls in the full `npm` CLI (via `@semantic-release/npm`) which **bundles** a high-severity `undici` that `overrides` can't reach → it would fail our own `npm audit` gate (ADR-020). It also pushes version commits to a **protected `main`**. Switched to **release-please** (a GitHub Action, **zero devDeps**, release-PR model that fits protected branches). Documented the swap honestly.
+- **Squash-merge changes what you lint.** With squash, the PR _title_ becomes the release-relevant subject — so CI lints the title, not the branch commits.
+- **GITHUB_TOKEN PRs don't cascade.** A release PR opened with the default token won't trigger required checks; a `RELEASE_PLEASE_TOKEN` PAT fixes it (workflow already falls back to it). Honest limitation, documented.
+
 ## Step N — [Title]
 
 **Status:** Done | In progress | Pending
