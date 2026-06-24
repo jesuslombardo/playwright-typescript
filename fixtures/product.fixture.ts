@@ -1,17 +1,9 @@
-import { test as base, expect, APIRequestContext } from '@playwright/test'
+import { test as base, expect } from '@playwright/test'
 import { buildProduct, ApiProduct } from '../data/product.factory'
-import { testUsers } from '../config/environments'
+import { getToken } from '../utils/api'
 
 type ProductFixtures = {
   apiProduct: ApiProduct
-}
-
-async function login(request: APIRequestContext): Promise<string> {
-  const res = await request.post('/api/login', {
-    data: { username: testUsers.standard.username, password: testUsers.standard.password },
-  })
-  expect(res.ok()).toBeTruthy()
-  return (await res.json()).token
 }
 
 /**
@@ -28,7 +20,7 @@ async function login(request: APIRequestContext): Promise<string> {
  */
 export const test = base.extend<ProductFixtures>({
   apiProduct: async ({ request }, use) => {
-    const token = await login(request)
+    const token = await getToken(request)
     const headers = { Authorization: `Bearer ${token}` }
 
     const res = await request.post('/api/products', { headers, data: buildProduct() })
