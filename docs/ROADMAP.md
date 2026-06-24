@@ -8,14 +8,35 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
-## Priority order (what to build next)
+## What's left — priority order (by criticality)
 
-| Order     | Phase / topic                           | Why this order                                                    |
-| --------- | --------------------------------------- | ----------------------------------------------------------------- |
-| **1**     | ~~**Phase 4 — CI/CD**~~                 | ✅ Complete — CI + CD MVP (GitHub Pages)                          |
-| **2**     | **Phase 3 — Hooks + reporting**         | Local quality + richer reports; complements CI                    |
-| ~~**3**~~ | ~~**Data layer (`data/`)**~~            | ✅ Complete — factories + datasets + lifecycle (Step 36, ADR-014) |
-| **4**     | **Phase 5 — Tags, sharding, hardening** | Optimization once the suite grows                                 |
+The big arc — testing + CI/CD + architecture + microservices + AI + the DevSecOps
+kickoff — is **done and green** (Steps 1–49, 22 ADRs, 14 test layers). Nothing here
+is a bug or a blocker; what remains is **breadth and polish**, not fixes. See
+[What's done](#whats-done) for the full built-out picture.
+
+### 🟡 Medium — finish **Phase 6** (already-declared scope)
+
+| Order | Item                          | What's missing                                                |
+| ----- | ----------------------------- | ------------------------------------------------------------- |
+| **1** | **SUT supply-chain security** | `demo-shop-app` has no Dependabot / CodeQL / gitleaks / audit |
+| **2** | **SUT code coverage**         | `c8` + threshold gate on the SUT unit/integration tests       |
+| **3** | **SUT hygiene / governance**  | LICENSE (MIT) + issue/PR templates, mirroring this repo       |
+| **4** | **Notifications**             | Nightly failure auto-opens / updates a tracking issue         |
+| **5** | **Performance**               | Lighthouse CI budget on the static UI (perf/a11y/best-pract.) |
+
+### ⚪ Advanced / nice-to-have (course "Part 2" material — not required to call it done)
+
+| Item                       | What it would add                                                                                                      |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Microservices Part 2**   | `orders-service` (own DB + runtime call) → distributed data, call-chain, tracing/retries/resilience                    |
+| **Pact Broker / PactFlow** | Hosted contract exchange + RS256/JWKS trust between services                                                           |
+| **Reporting**              | Allure / Monocart + dual reporter (richer than the HTML report)                                                        |
+| **AI module extensions**   | Persistent heal-cache, AI-in-app validation (option B), judge reliability evals, NL actions (Stagehand/Playwright MCP) |
+| **More coverage**          | More E2E/visual flows, reproducible faker seed, volume data for perf                                                   |
+
+> **Out of scope on purpose** (not debt): OS matrix, BDD/Cucumber, TestRail/Xray,
+> Slack/Teams alerting — see the Phase 6 note for the reasoning.
 
 > **Learning rule:** one concept per session — explain → implement → document in BUILD_LOG.
 
@@ -29,7 +50,8 @@ For design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ✅ Phase 4   CI/CD (GitHub Actions + GitHub Pages CD)
 🟡 Phase 3   Hooks ✅ (Husky) + anti-flaky ✅ (ADR-005) · reporting 💤 NTH
 ✅ data/     Test data layer (factories + datasets + lifecycle, ADR-014)
-🟡 Phase 5   Docker ✅ · tags ✅ · pyramid ✅ · sharding ✅ · matrix ✅ · CD ✅ · visual ✅ · staging→prod gate ✅ · app pin ✅
+✅ Phase 5   Docker · tags · pyramid · sharding · matrix · CD · visual · mobile · staging→prod gate · app pin · micro + Pact · AI
+🟡 Phase 6   Hygiene ✅ · supply-chain ✅ · a11y ✅ · release automation ✅ · perf/notifs/SUT-hardening ⬜
 ```
 
 ---
@@ -219,22 +241,30 @@ Slack/Teams alerting (chose GitHub-native to stay setup-free).
 
 ---
 
-## Session picker
+## Next session — picker
 
-| Option                    | Duration | Outcome                                         |
-| ------------------------- | -------- | ----------------------------------------------- |
-| ~~**A — Close Phase 4**~~ | ✅ Done  | CI + CD MVP + BUILD_LOG Step 15                 |
-| **B — Start Phase 3**     | ~45 min  | Husky + lint-staged — save → commit → hook → CI |
+| Option                            | Effort  | Outcome                                                    |
+| --------------------------------- | ------- | ---------------------------------------------------------- |
+| **A — SUT supply-chain security** | ~45 min | Mirror Dependabot / CodeQL / gitleaks / audit into the SUT |
+| **B — SUT code coverage**         | ~30 min | `c8` + threshold gate on the SUT unit/integration tests    |
+| **C — Notifications**             | ~30 min | Nightly failure auto-opens / updates a tracking issue      |
+| **D — Performance**               | ~45 min | Lighthouse CI budget on the static UI                      |
 
-**Recommendation:** Option B — Husky next.
+**Recommendation:** Option A — close the security-parity gap (the SUT is less hardened than this repo).
 
 ---
 
 ## Portfolio pitch (updated)
 
-> Playwright + TypeScript framework with POM, fixtures, cross-browser CI, GitHub Actions (lint / format / tests), failure debug artifacts, secrets-ready config, and **live HTML reports on GitHub Pages (CD)**.
+> End-to-end Playwright + TypeScript SDET framework: POM + fixtures + a `data/` layer;
+> **14 test layers** (E2E, API, schema + consumer-driven (Pact) contracts, visual,
+> mobile, a11y, AI-assisted); a full CI/CD pipeline (testing pyramid, Docker, sharding,
+> Node matrix, GitHub Pages + Render CD with a staging→prod approval gate); an optional
+> microservices mode; and a DevSecOps baseline (Dependabot, CodeQL, gitleaks, release
+> automation).
 
-Phase 3 and Phase 5 move this from **"solid learning repo"** to **"production-ready patterns"**.
+The remaining Phase 6 items (SUT hardening, notifications, performance) and the
+advanced backlog are **breadth, not blockers**.
 
 ---
 
