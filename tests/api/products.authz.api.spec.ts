@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { getToken } from '../../utils/api'
+import { getToken, getCustomerToken } from '../../utils/api'
 import { buildProduct } from '../../data/product.factory'
 import { writeOps } from '../../data/write-ops'
 
@@ -27,6 +27,14 @@ test.describe('Products API — authorization @api', () => {
         data: op.body,
       })
       expect(res.status()).toBe(401)
+    })
+
+    test(`${op.label} — rejected for a customer (non-admin) token → 403`, async ({ request }) => {
+      const res = await request[op.method](op.path, {
+        headers: { Authorization: `Bearer ${await getCustomerToken(request)}` },
+        data: op.body,
+      })
+      expect(res.status()).toBe(403)
     })
   }
 
