@@ -2214,6 +2214,38 @@ git commit -m "feat: ..."              # commit-msg hook validates locally
 - **Squash-merge changes what you lint.** With squash, the PR _title_ becomes the release-relevant subject — so CI lints the title, not the branch commits.
 - **GITHUB_TOKEN PRs don't cascade.** A release PR opened with the default token won't trigger required checks; a `RELEASE_PLEASE_TOKEN` PAT fixes it (workflow already falls back to it). Honest limitation, documented.
 
+## Step 50 — Fix release-please on protected `main`: open the release PR via a GitHub App
+
+**Status:** Done
+
+**What**
+
+- The first real run of the Step 49 `Release` workflow **failed**: `release-please failed: GitHub Actions is not permitted to create or approve pull requests.` It is **not** a required check, so nothing on `main` was blocked — but the release automation could not actually produce its release PR.
+- **Root cause (two layers):** (1) the repo setting _"Allow GitHub Actions to create and approve pull requests"_ was off; (2) more fundamentally, a PR opened by `GITHUB_TOKEN` **does not trigger** other workflows (anti-recursion), so on this protected `main` (`enforce_admins: true`) the release PR would have **zero required checks → unmergeable**.
+- **Fix:** open the release PR as a **GitHub App** instead of `GITHUB_TOKEN`. `release.yml` now mints a short-lived token with `actions/create-github-app-token@v2` (`app-id` + `private-key` from secrets) and passes it to release-please. The App is a non-`GITHUB_TOKEN` identity → the release PR runs the normal pyramid and is mergeable.
+- **Chose App over a PAT** because the App token **has nothing to renew** (PATs expire and break the pipeline silently when they do); cost is a one-time App create + install.
+
+**Why**
+
+- A release-automation feature that cannot open its release PR is not actually working. The App token is the durable fix for a protected branch. See [ADR-022](adr/022-release-automation-conventional-commits.md) (Negative section updated).
+
+**Setup (one-time, in the GitHub UI)**
+
+- Create a GitHub App (Settings → Developer settings → GitHub Apps): permissions **Contents: R/W** + **Pull requests: R/W**, webhook disabled, installable on this account only.
+- Generate a private key (`.pem`), note the **App ID**, install the App on `playwright-typescript`.
+- Repo secrets: `RELEASE_PLEASE_APP_ID`, `RELEASE_PLEASE_APP_PRIVATE_KEY`.
+
+**Files**
+
+- `.github/workflows/release.yml` (App-token step; `token:` now the App token)
+- `docs/adr/022-release-automation-conventional-commits.md` (Negative section), `docs/BUILD_LOG.md`
+
+**Learnings**
+
+- **`GITHUB_TOKEN` is deliberately "second-class" for cascading automation.** Anything it does won't start another workflow. The moment an automation must **open a PR that then needs CI** (release-please, auto-changelog bots), you need a non-`GITHUB_TOKEN` identity: a **PAT** or, better, a **GitHub App**.
+- **App vs PAT:** same effect (real identity → checks run), but the App token is regenerated per run, so there is no expiry to babysit — the right call for a long-lived/course repo.
+- The repo toggle alone (_"Allow Actions to create PRs"_) would have let the PR be _created_ but it still would not have run the required checks → still stuck behind `enforce_admins`. The identity, not the toggle, is the real fix.
+
 ## Step N — [Title]
 
 **Status:** Done | In progress | Pending
