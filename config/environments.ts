@@ -12,13 +12,22 @@ export const environments = {
 
 /*
  * Demo credentials are public values (mirroring Sauce Demo) — safe to commit as
- * defaults. The app itself accepts standard_user / secret_sauce out of the box.
- * For a private app: set DEMO_* locally (.env) or as GitHub Secrets in CI.
+ * defaults. For a private app: set the DEMO_ and ADMIN_ env vars locally (.env)
+ * or as GitHub Secrets in CI.
+ *
+ * Since app v2.0.0 the two demo users carry different ROLES:
+ *   - standard (standard_user) → 'customer' — shops: browse, cart, checkout.
+ *   - admin    (admin)         → 'admin'    — manages the catalogue (CRUD).
+ * standard stays the headline shopper; admin is needed for any catalogue write.
  */
 export const testUsers = {
   standard: {
     username: process.env.DEMO_USER || 'standard_user',
     password: process.env.DEMO_PASSWORD || 'secret_sauce',
+  },
+  admin: {
+    username: process.env.ADMIN_USER || 'admin',
+    password: process.env.ADMIN_PASSWORD || 'admin_sauce',
   },
   invalid: {
     username: 'wrong_user',

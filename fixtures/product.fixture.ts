@@ -1,17 +1,9 @@
-import { test as base, expect, APIRequestContext } from '@playwright/test'
+import { test as base, expect } from '@playwright/test'
 import { buildProduct, ApiProduct } from '../data/product.factory'
-import { testUsers } from '../config/environments'
+import { getToken } from '../utils/api'
 
 type ProductFixtures = {
   apiProduct: ApiProduct
-}
-
-async function login(request: APIRequestContext): Promise<string> {
-  const res = await request.post('/api/login', {
-    data: { username: testUsers.standard.username, password: testUsers.standard.password },
-  })
-  expect(res.ok()).toBeTruthy()
-  return (await res.json()).token
 }
 
 /**
@@ -25,11 +17,13 @@ async function login(request: APIRequestContext): Promise<string> {
  * It also enables "set up via API, assert via UI": seed state with one fast API
  * call instead of clicking through the creation form when that is not what you
  * are testing.
+ *
+ * Catalogue writes require the ADMIN role (since app v2.0.0), so `getToken`
+ * authenticates as admin here.
  */
 export const test = base.extend<ProductFixtures>({
   apiProduct: async ({ request }, use) => {
-    const token = await login(request)
-    const headers = { Authorization: `Bearer ${token}` }
+    const headers = { Authorization: `Bearer ${await getToken(request)}` }
 
     const res = await request.post('/api/products', { headers, data: buildProduct() })
     expect(res.status()).toBe(201)

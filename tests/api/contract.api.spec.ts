@@ -1,6 +1,7 @@
 import { test, expect, request as apiRequest, type APIRequestContext } from '@playwright/test'
 import Ajv, { type ValidateFunction } from 'ajv'
 import { environments, testUsers } from '../../config/environments'
+import { getToken } from '../../utils/api'
 
 /*
  * Contract layer (@api @contract). Instead of checking behaviour, these tests
@@ -48,10 +49,8 @@ test.describe('Products contract @api @contract', () => {
   })
 
   test('a created product matches the Product schema', async ({ request }) => {
-    const login = await request.post('/api/login', {
-      data: { username: testUsers.standard.username, password: testUsers.standard.password },
-    })
-    const headers = { Authorization: `Bearer ${(await login.json()).token}` }
+    // Catalogue writes require the admin role since v2.0.0.
+    const headers = { Authorization: `Bearer ${await getToken(request)}` }
 
     const created = await request.post('/api/products', {
       headers,
