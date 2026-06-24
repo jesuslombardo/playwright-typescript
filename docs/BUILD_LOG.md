@@ -2074,6 +2074,43 @@ gh workflow run ai.yml
 - **Determinism is handled by gating, not hope.** A project gate (`AI_TESTS`) + a key skip keep the non-deterministic, paid suite out of the required CI gate entirely.
 - **Free-tier model drift is real:** `gemini-2.0-flash` returned `429 limit: 0` on the AI Studio free tier; `gemini-2.5-flash` worked — hence the `GEMINI_MODEL` override and the 2.5-flash default.
 
+## Step 46 — Repo hygiene & governance (Phase 6 kickoff)
+
+**Status:** Done
+
+**What**
+
+- Opened **Phase 6 — Production hardening (DevSecOps & governance)** in the ROADMAP and shipped its first, lowest-risk slice: the repository governance files an industry repo is expected to have.
+- **`LICENSE`** — proprietary / **All Rights Reserved**. The teaching repo (BUILD*LOG + ADRs) is the paid-course product, so the code is \_not* open for reuse. `package.json` updated to `"license": "UNLICENSED"` + `"private": true` (npm convention for proprietary; blocks an accidental `npm publish`).
+- **`.github/CODEOWNERS`** — `@jesuslombardo` is auto-requested on every PR (and explicitly on `/.github/` and `/docs/`).
+- **`SECURITY.md`** — vulnerability-reporting policy (private reporting, never a public issue) + a table of the supply-chain controls landing in the next steps.
+- **`CODE_OF_CONDUCT.md`** — Contributor Covenant 2.1, condensed.
+- **Issue forms** (`.github/ISSUE_TEMPLATE/bug_report.yml`, `feature_request.yml`, `config.yml` with `blank_issues_enabled: false`) and a **`PULL_REQUEST_TEMPLATE.md`** that encodes the repo's rules (one concept per PR, lint/format/tests green, docs updated, merge-app-first).
+
+**Why**
+
+- These are the files GitHub uses to mark a repo as "professionally maintained," and the LICENSE decision genuinely matters now that the repo is heading toward a paid course — viewing the public repo must not imply a right to reuse the materials. See ROADMAP Phase 6.
+
+**Commands**
+
+```bash
+npm run format:check   # the new .md/.yml files must be Prettier-clean
+npm run lint           # unaffected (no source changed)
+```
+
+**Files**
+
+- `LICENSE`, `SECURITY.md`, `CODE_OF_CONDUCT.md` (new)
+- `.github/CODEOWNERS`, `.github/PULL_REQUEST_TEMPLATE.md` (new)
+- `.github/ISSUE_TEMPLATE/{bug_report,feature_request,config}.yml` (new)
+- `package.json` (`private: true`, `license: UNLICENSED`, author), `docs/ROADMAP.md` (Phase 6 table)
+
+**Learnings**
+
+- **License signals intent.** `UNLICENSED` + `private: true` is npm's idiom for "all rights reserved, do not publish" — clearer than leaving the inherited `ISC` that silently said "reuse me freely."
+- **Governance is additive and zero-risk.** None of these files run in CI, but every one of them is what a reviewer scans first to judge whether a repo is maintained — high signal, near-zero cost.
+- **A PR template is executable process.** Putting "merge app first" and "docs updated" into the template makes the repo's conventions self-enforcing instead of tribal knowledge.
+
 ## Step N — [Title]
 
 **Status:** Done | In progress | Pending
