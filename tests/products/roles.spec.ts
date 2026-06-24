@@ -9,7 +9,9 @@ import { ProductsPage } from '../../pages/products.page'
  * the shopping pages bounce them back to the catalogue.
  */
 test.describe('Role-based catalogue view', () => {
-  test('customer sees the storefront and shopping nav, not management', async ({ customerPage }) => {
+  test('customer sees the storefront and shopping nav, not management', async ({
+    customerPage,
+  }) => {
     const products = new ProductsPage(customerPage)
 
     await expect(products.header.roleBadge).toHaveText('customer')
