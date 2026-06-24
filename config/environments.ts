@@ -20,6 +20,11 @@ export const testUsers = {
     username: process.env.DEMO_USER || 'standard_user',
     password: process.env.DEMO_PASSWORD || 'secret_sauce',
   },
+  // Catalogue writes require the admin role as of demo-shop-app v2.0.0.
+  admin: {
+    username: process.env.ADMIN_USER || 'admin',
+    password: process.env.ADMIN_PASSWORD || 'admin_sauce',
+  },
   invalid: {
     username: 'wrong_user',
     password: 'wrong_password',
