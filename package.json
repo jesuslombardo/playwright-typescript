@@ -1,6 +1,6 @@
 {
   "name": "playwright-typescript",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A foundational project to incrementally build a modern, maintainable, and scalable test automation framework, following real-world quality engineering practices.",
   "main": "index.js",
   "private": true,

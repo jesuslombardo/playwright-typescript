@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/jesuslombardo/playwright-typescript/compare/v1.1.0...v1.2.0) (2026-06-25)
+
+
+### Features
+
+* add shared HeaderComponent (topbar) and pin SUT to v2.0.1 ([#48](https://github.com/jesuslombardo/playwright-typescript/issues/48)) ([71a6834](https://github.com/jesuslombardo/playwright-typescript/commit/71a6834412adac3b7d887d8a16cb91b6e7c01a55))
+* **ai:** expose token usage from the Gemini client ([bd154f4](https://github.com/jesuslombardo/playwright-typescript/commit/bd154f46db7102a1f802a77a5dc087f344021243))
+
 ## [1.1.0](https://github.com/jesuslombardo/playwright-typescript/compare/v1.0.0...v1.1.0) (2026-06-24)
 
 
