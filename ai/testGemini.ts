@@ -17,4 +17,7 @@ async function main() {
   console.log(`  total:    ${usage.total} tokens`)
 }
 
-main()
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

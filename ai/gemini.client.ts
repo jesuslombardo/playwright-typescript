@@ -43,7 +43,11 @@ export interface Usage {
   prompt: number
   /** Tokens in the model's answer (output). */
   response: number
-  /** prompt + response — this is what counts against your per-minute (TPM) limit. */
+  /**
+   * Everything the call counted: prompt + response, PLUS any hidden "thinking"
+   * tokens on reasoning models — so this can exceed prompt + response. This is
+   * the number that counts against your per-minute (TPM) limit.
+   */
   total: number
 }
 
